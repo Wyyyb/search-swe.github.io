@@ -1,0 +1,761 @@
+{
+  "pricing_sha256": "e0c144563175720feaf75438a21e446188bab783e31630022c14d3c5bf3c196a",
+  "schema": 1,
+  "snapshot_id": "2026-10-31-local-1233340bbd",
+  "snapshot_sha256": "a36172e47a26d5cdb93b3df7d2bd3379ff17c5b21a208cd481bcf2569497dd9f",
+  "trials": {
+    "agentic-search-deepseek-v4.1-flash-1017-max-4e4090bad692": {
+      "cost_usd": "0.363150234",
+      "response_count": 662
+    },
+    "agentic-search-glm-5.3-flash-max-4425c9d4bce2": {
+      "cost_usd": "1.50214739",
+      "response_count": 250
+    },
+    "agentic-search-gpt-6-luna-max-fd79296ab48e": {
+      "cost_usd": "1.408341680",
+      "response_count": 276
+    },
+    "agentic-search-mimo-v2.6-flash-high-343e88dc5f55": {
+      "cost_usd": "0.1794599464",
+      "response_count": 266
+    },
+    "agentic-search-vectorless-deepseek-v4.1-flash-1017-max-158242a28958": {
+      "cost_usd": "0.502531176",
+      "response_count": 144
+    },
+    "agentic-search-vectorless-glm-5.3-flash-max-8eed7e4c746a": {
+      "cost_usd": "2.47848619",
+      "response_count": 474
+    },
+    "agentic-search-vectorless-gpt-6-luna-max-68163f93f018": {
+      "cost_usd": "0.602699730",
+      "response_count": 204
+    },
+    "agentic-search-vectorless-mimo-v2.6-flash-high-14262e34b71b": {
+      "cost_usd": "0.2132654244",
+      "response_count": 16
+    },
+    "biomedical-graph-retrieval-deepseek-v4.1-flash-1017-max-dc1355b97fdc": {
+      "cost_usd": "0.479799654",
+      "response_count": 402
+    },
+    "biomedical-graph-retrieval-glm-5.3-flash-max-1300353e9fa5": {
+      "cost_usd": "3.31299455",
+      "response_count": 389
+    },
+    "biomedical-graph-retrieval-gpt-6-luna-max-25f203751dbc": {
+      "cost_usd": "0.229057075",
+      "response_count": 94
+    },
+    "biomedical-graph-retrieval-mimo-v2.6-flash-high-5b34bffa4066": {
+      "cost_usd": "0.0716341472",
+      "response_count": 44
+    },
+    "budgeted-bimetric-retrieval-deepseek-v4.1-flash-1017-max-0050925e6e09": {
+      "cost_usd": "0.369778446",
+      "response_count": 223
+    },
+    "budgeted-bimetric-retrieval-glm-5.3-flash-max-2bc11b245dd0": {
+      "cost_usd": "4.25046868",
+      "response_count": 762
+    },
+    "budgeted-bimetric-retrieval-gpt-6-luna-max-cac411809251": {
+      "cost_usd": "0.142626660",
+      "response_count": 96
+    },
+    "budgeted-bimetric-retrieval-mimo-v2.6-flash-high-7c348ddd3dc5": {
+      "cost_usd": "0.0736791608",
+      "response_count": 162
+    },
+    "budgeted-candidate-reranking-deepseek-v4.1-flash-1017-max-5d8a6d3779e1": {
+      "cost_usd": "0.388180092",
+      "response_count": 359
+    },
+    "budgeted-candidate-reranking-glm-5.3-flash-max-64ea7b0458ea": {
+      "cost_usd": "3.59987346",
+      "response_count": 1048
+    },
+    "budgeted-candidate-reranking-gpt-6-luna-max-59c043707509": {
+      "cost_usd": "0.166606170",
+      "response_count": 98
+    },
+    "budgeted-candidate-reranking-mimo-v2.6-flash-high-9a8fd3c0a378": {
+      "cost_usd": "0.0495740056",
+      "response_count": 76
+    },
+    "chunqiu-temporal-retrieval-deepseek-v4.1-flash-1017-max-b1b2c328e060": {
+      "cost_usd": "0.515692356",
+      "response_count": 293
+    },
+    "chunqiu-temporal-retrieval-glm-5.3-flash-max-7e14a5fc4bfa": {
+      "cost_usd": "2.30582235",
+      "response_count": 292
+    },
+    "chunqiu-temporal-retrieval-gpt-6-luna-max-d1be8212ebca": {
+      "cost_usd": "0.275167205",
+      "response_count": 83
+    },
+    "chunqiu-temporal-retrieval-mimo-v2.6-flash-high-2f65bd67bc82": {
+      "cost_usd": "0.0650246464",
+      "response_count": 65
+    },
+    "code-context-retrieval-deepseek-v4.1-flash-1017-max-8429aebfcf01": {
+      "cost_usd": "0.421026162",
+      "response_count": 239
+    },
+    "code-context-retrieval-glm-5.3-flash-max-881bb120c6a2": {
+      "cost_usd": "0.03969287",
+      "response_count": 28
+    },
+    "code-context-retrieval-gpt-6-luna-max-11c1e408bc2a": {
+      "cost_usd": "1.226003870",
+      "response_count": 172
+    },
+    "code-context-retrieval-mimo-v2.6-flash-high-e2e50bf629d2": {
+      "cost_usd": "0.2060844016",
+      "response_count": 190
+    },
+    "code-embedding-finetuning-deepseek-v4.1-flash-1017-max-695008502793": {
+      "cost_usd": "0.627752676",
+      "response_count": 464
+    },
+    "code-embedding-finetuning-glm-5.3-flash-max-59607b5d4187": {
+      "cost_usd": "0.85263205",
+      "response_count": 303
+    },
+    "code-embedding-finetuning-gpt-6-luna-max-8bccb3833ae3": {
+      "cost_usd": "0.266671275",
+      "response_count": 161
+    },
+    "code-embedding-finetuning-mimo-v2.6-flash-high-c295ca35f645": {
+      "cost_usd": "0.4734265788",
+      "response_count": 28
+    },
+    "code-reranker-finetuning-deepseek-v4.1-flash-1017-max-6f67dc848c7a": {
+      "cost_usd": "0.088592352",
+      "response_count": 77
+    },
+    "code-reranker-finetuning-glm-5.3-flash-max-5541d0c82c1b": {
+      "cost_usd": "3.87863473",
+      "response_count": 1432
+    },
+    "code-reranker-finetuning-gpt-6-luna-max-ef96da1ac661": {
+      "cost_usd": "0.202720525",
+      "response_count": 140
+    },
+    "code-reranker-finetuning-mimo-v2.6-flash-high-4f6a3a5c7b0f": {
+      "cost_usd": "0.5577893160",
+      "response_count": 170
+    },
+    "composed-image-search-deepseek-v4.1-flash-1017-max-3aa34ef4cdd7": {
+      "cost_usd": "0.441305154",
+      "response_count": 172
+    },
+    "composed-image-search-glm-5.3-flash-max-6ee24289f0f6": {
+      "cost_usd": "0.06958960",
+      "response_count": 76
+    },
+    "composed-image-search-gpt-6-luna-max-4800b458acbd": {
+      "cost_usd": "0.163350475",
+      "response_count": 61
+    },
+    "composed-image-search-mimo-v2.6-flash-high-66b3343ac644": {
+      "cost_usd": "0.0568955184",
+      "response_count": 28
+    },
+    "constrained-molecular-search-deepseek-v4.1-flash-1017-max-21295b9a727d": {
+      "cost_usd": "1.450595256",
+      "response_count": 706
+    },
+    "constrained-molecular-search-glm-5.3-flash-max-154ff8bbb920": {
+      "cost_usd": "21.99469171",
+      "response_count": 1992
+    },
+    "constrained-molecular-search-gpt-6-luna-max-faf64ca3dc77": {
+      "cost_usd": "0.975984745",
+      "response_count": 252
+    },
+    "constrained-molecular-search-mimo-v2.6-flash-high-886f74114e58": {
+      "cost_usd": "0.0739034464",
+      "response_count": 35
+    },
+    "decision-model-training-deepseek-v4.1-flash-1017-max-a3f9fd70a3ac": {
+      "cost_usd": "0.103173978",
+      "response_count": 13
+    },
+    "decision-model-training-glm-5.3-flash-max-5ac07a63321b": {
+      "cost_usd": "0.22170531",
+      "response_count": 126
+    },
+    "decision-model-training-gpt-6-luna-max-f9719534b2c0": {
+      "cost_usd": "0.325389885",
+      "response_count": 147
+    },
+    "decision-model-training-mimo-v2.6-flash-high-8116b63eae76": {
+      "cost_usd": "0.0719487720",
+      "response_count": 87
+    },
+    "document-page-search-deepseek-v4.1-flash-1017-max-d9fccc6b44e5": {
+      "cost_usd": "0.264366210",
+      "response_count": 122
+    },
+    "document-page-search-glm-5.3-flash-max-2423249926da": {
+      "cost_usd": "2.08518235",
+      "response_count": 297
+    },
+    "document-page-search-gpt-6-luna-max-ba366eb02dc4": {
+      "cost_usd": "0.257342625",
+      "response_count": 123
+    },
+    "document-page-search-mimo-v2.6-flash-high-7f4786e13a05": {
+      "cost_usd": "0.1175026468",
+      "response_count": 194
+    },
+    "evolving-personal-memory-deepseek-v4.1-flash-1017-max-4e00798ac5fb": {
+      "cost_usd": "0.639223674",
+      "response_count": 179
+    },
+    "evolving-personal-memory-glm-5.3-flash-max-d7f0eab6f507": {
+      "cost_usd": "9.54869776",
+      "response_count": 865
+    },
+    "evolving-personal-memory-gpt-6-luna-max-5f053fbb3ab8": {
+      "cost_usd": "0.275523410",
+      "response_count": 100
+    },
+    "evolving-personal-memory-mimo-v2.6-flash-high-844c5f6956a6": {
+      "cost_usd": "0.2305012080",
+      "response_count": 58
+    },
+    "filtered-ann-retrieval-deepseek-v4.1-flash-1017-max-34f3c9665313": {
+      "cost_usd": "0.414059322",
+      "response_count": 250
+    },
+    "filtered-ann-retrieval-glm-5.3-flash-max-a0544bf6458c": {
+      "cost_usd": "1.67462885",
+      "response_count": 612
+    },
+    "filtered-ann-retrieval-gpt-6-luna-max-224e6cb63522": {
+      "cost_usd": "0.198282490",
+      "response_count": 76
+    },
+    "filtered-ann-retrieval-mimo-v2.6-flash-high-de20c4fa6586": {
+      "cost_usd": "0.1974873208",
+      "response_count": 95
+    },
+    "financial-report-qa-deepseek-v4.1-flash-1017-max-cbe1229fb127": {
+      "cost_usd": "0.497057406",
+      "response_count": 266
+    },
+    "financial-report-qa-glm-5.3-flash-max-9b7e221dac03": {
+      "cost_usd": "4.19347890",
+      "response_count": 1028
+    },
+    "financial-report-qa-gpt-6-luna-max-162369422f12": {
+      "cost_usd": "0.258467450",
+      "response_count": 86
+    },
+    "financial-report-qa-mimo-v2.6-flash-high-857b1a079ab8": {
+      "cost_usd": "0.0995995280",
+      "response_count": 123
+    },
+    "icsi-meeting-memory-deepseek-v4.1-flash-1017-max-ae9ecca33329": {
+      "cost_usd": "0.460982586",
+      "response_count": 285
+    },
+    "icsi-meeting-memory-glm-5.3-flash-max-6b87c5bb5fdd": {
+      "cost_usd": "3.43809181",
+      "response_count": 204
+    },
+    "icsi-meeting-memory-gpt-6-luna-max-9812ef66dc42": {
+      "cost_usd": "1.058114655",
+      "response_count": 147
+    },
+    "icsi-meeting-memory-mimo-v2.6-flash-high-78ce2400daa1": {
+      "cost_usd": "0.0821559648",
+      "response_count": 120
+    },
+    "incremental-vector-search-deepseek-v4.1-flash-1017-max-1f7698fdb791": {
+      "cost_usd": "0.745303278",
+      "response_count": 264
+    },
+    "incremental-vector-search-glm-5.3-flash-max-c5666036d6c2": {
+      "cost_usd": "0.87082200",
+      "response_count": 325
+    },
+    "incremental-vector-search-gpt-6-luna-max-d0455b4d40d8": {
+      "cost_usd": "0.759132485",
+      "response_count": 298
+    },
+    "incremental-vector-search-mimo-v2.6-flash-high-d6aaf9c9e564": {
+      "cost_usd": "0.3474196936",
+      "response_count": 377
+    },
+    "instruction-following-embedding-deepseek-v4.1-flash-1017-max-ab0b0e0df236": {
+      "cost_usd": "0.184077840",
+      "response_count": 167
+    },
+    "instruction-following-embedding-glm-5.3-flash-max-ad2b2c0c21b9": {
+      "cost_usd": "3.48676039",
+      "response_count": 762
+    },
+    "instruction-following-embedding-gpt-6-luna-max-4a8f94bf7141": {
+      "cost_usd": "0.175007605",
+      "response_count": 111
+    },
+    "instruction-following-embedding-mimo-v2.6-flash-high-4918154b3b2a": {
+      "cost_usd": "0.5974931816",
+      "response_count": 89
+    },
+    "join-aware-table-retrieval-deepseek-v4.1-flash-1017-max-d3de89fb249e": {
+      "cost_usd": "0.305852202",
+      "response_count": 157
+    },
+    "join-aware-table-retrieval-glm-5.3-flash-max-c1f90db44c91": {
+      "cost_usd": "1.48524497",
+      "response_count": 285
+    },
+    "join-aware-table-retrieval-gpt-6-luna-max-eea6eb0d8435": {
+      "cost_usd": "0.202561770",
+      "response_count": 83
+    },
+    "join-aware-table-retrieval-mimo-v2.6-flash-high-1442577f5bff": {
+      "cost_usd": "0.0908080208",
+      "response_count": 168
+    },
+    "khmer-embedding-training-deepseek-v4.1-flash-1017-max-07944be61674": {
+      "cost_usd": "0.398740956",
+      "response_count": 331
+    },
+    "khmer-embedding-training-glm-5.3-flash-max-a81b6ddde70c": {
+      "cost_usd": "7.95595521",
+      "response_count": 2034
+    },
+    "khmer-embedding-training-gpt-6-luna-max-f73f60ede3ae": {
+      "cost_usd": "0.174085715",
+      "response_count": 91
+    },
+    "khmer-embedding-training-mimo-v2.6-flash-high-9ea702ffe541": {
+      "cost_usd": "0.0545730864",
+      "response_count": 75
+    },
+    "large-scale-formula-retrieval-deepseek-v4.1-flash-1017-max-a4ac0ae2b4e5": {
+      "cost_usd": "0.096489894",
+      "response_count": 78
+    },
+    "large-scale-formula-retrieval-glm-5.3-flash-max-2c386e9f40cb": {
+      "cost_usd": "0.26567123",
+      "response_count": 76
+    },
+    "large-scale-formula-retrieval-gpt-6-luna-max-e41cae410774": {
+      "cost_usd": "0.247446920",
+      "response_count": 91
+    },
+    "large-scale-formula-retrieval-mimo-v2.6-flash-high-e5fa86bc5c88": {
+      "cost_usd": "0.0791991424",
+      "response_count": 64
+    },
+    "layout-page-search-deepseek-v4.1-flash-1017-max-69a2893c293a": {
+      "cost_usd": "0.299858874",
+      "response_count": 160
+    },
+    "layout-page-search-glm-5.3-flash-max-0de2194d8cce": {
+      "cost_usd": "10.20095884",
+      "response_count": 952
+    },
+    "layout-page-search-gpt-6-luna-max-e5215999abc9": {
+      "cost_usd": "0.217927220",
+      "response_count": 135
+    },
+    "layout-page-search-mimo-v2.6-flash-high-9a7d11e069eb": {
+      "cost_usd": "0.0628165104",
+      "response_count": 20
+    },
+    "legal-stance-retrieval-deepseek-v4.1-flash-1017-max-bce03fb2b3c5": {
+      "cost_usd": "0.401750232",
+      "response_count": 394
+    },
+    "legal-stance-retrieval-glm-5.3-flash-max-85f14c2ea9a4": {
+      "cost_usd": "1.02674309",
+      "response_count": 290
+    },
+    "legal-stance-retrieval-gpt-6-luna-max-686b15bdc24d": {
+      "cost_usd": "0.121389345",
+      "response_count": 65
+    },
+    "legal-stance-retrieval-mimo-v2.6-flash-high-42e706790a4b": {
+      "cost_usd": "0.1680038304",
+      "response_count": 94
+    },
+    "lightweight-query-retrieval-deepseek-v4.1-flash-1017-max-6b88003b868d": {
+      "cost_usd": "1.424654856",
+      "response_count": 1098
+    },
+    "lightweight-query-retrieval-glm-5.3-flash-max-f66f45d772ae": {
+      "cost_usd": "10.77581728",
+      "response_count": 1238
+    },
+    "lightweight-query-retrieval-gpt-6-luna-max-092300d406ad": {
+      "cost_usd": "2.774551205",
+      "response_count": 391
+    },
+    "lightweight-query-retrieval-mimo-v2.6-flash-high-945d94a11cd3": {
+      "cost_usd": "0.1485200864",
+      "response_count": 134
+    },
+    "long-document-reranking-deepseek-v4.1-flash-1017-max-ff2741b0be77": {
+      "cost_usd": "0.131477307",
+      "response_count": 105
+    },
+    "long-document-reranking-glm-5.3-flash-max-15b69016bbca": {
+      "cost_usd": "1.78730952",
+      "response_count": 832
+    },
+    "long-document-reranking-gpt-6-luna-max-4e362465c111": {
+      "cost_usd": "0.366114360",
+      "response_count": 141
+    },
+    "long-document-reranking-mimo-v2.6-flash-high-39391b516f70": {
+      "cost_usd": "0.1234086392",
+      "response_count": 37
+    },
+    "long-pdf-evidence-deepseek-v4.1-flash-1017-max-328a3d46dfb8": {
+      "cost_usd": "0.324938328",
+      "response_count": 245
+    },
+    "long-pdf-evidence-glm-5.3-flash-max-0380296c714d": {
+      "cost_usd": "0.57471690",
+      "response_count": 258
+    },
+    "long-pdf-evidence-gpt-6-luna-max-96f6af4d4d99": {
+      "cost_usd": "0.592252080",
+      "response_count": 133
+    },
+    "long-pdf-evidence-mimo-v2.6-flash-high-ee86afa547cd": {
+      "cost_usd": "0.1064865648",
+      "response_count": 168
+    },
+    "long-pdf-evidence-vectorless-deepseek-v4.1-flash-1017-max-73f43b97d808": {
+      "cost_usd": "0.149266182",
+      "response_count": 164
+    },
+    "long-pdf-evidence-vectorless-glm-5.3-flash-max-1c68ca6b42fa": {
+      "cost_usd": "1.55394202",
+      "response_count": 473
+    },
+    "long-pdf-evidence-vectorless-gpt-6-luna-max-eaa6aab1e7fd": {
+      "cost_usd": "0.585499865",
+      "response_count": 116
+    },
+    "long-pdf-evidence-vectorless-mimo-v2.6-flash-high-3f1ef2fbd203": {
+      "cost_usd": "0.0983892336",
+      "response_count": 138
+    },
+    "memory-constrained-dense-retrieval-deepseek-v4.1-flash-1017-max-3dbd243e1aea": {
+      "cost_usd": "0.543708918",
+      "response_count": 415
+    },
+    "memory-constrained-dense-retrieval-glm-5.3-flash-max-0457d5c5a1b1": {
+      "cost_usd": "5.39060912",
+      "response_count": 670
+    },
+    "memory-constrained-dense-retrieval-gpt-6-luna-max-b12bb5b53245": {
+      "cost_usd": "0.296712115",
+      "response_count": 95
+    },
+    "memory-constrained-dense-retrieval-mimo-v2.6-flash-high-f31aeaced136": {
+      "cost_usd": "0.0976479840",
+      "response_count": 107
+    },
+    "methodology-inspiration-retrieval-deepseek-v4.1-flash-1017-max-8cf87dfe630c": {
+      "cost_usd": "0.416351970",
+      "response_count": 394
+    },
+    "methodology-inspiration-retrieval-glm-5.3-flash-max-0f89894fcafe": {
+      "cost_usd": "2.12559017",
+      "response_count": 316
+    },
+    "methodology-inspiration-retrieval-gpt-6-luna-max-14c5074499a1": {
+      "cost_usd": "0.230723355",
+      "response_count": 113
+    },
+    "methodology-inspiration-retrieval-mimo-v2.6-flash-high-ed5d2ba62706": {
+      "cost_usd": "0.1224292328",
+      "response_count": 111
+    },
+    "multilingual-vector-postprocessing-deepseek-v4.1-flash-1017-max-af5f7a87053a": {
+      "cost_usd": "0.285004593",
+      "response_count": 185
+    },
+    "multilingual-vector-postprocessing-glm-5.3-flash-max-cf817b8176ad": {
+      "cost_usd": "8.31573821",
+      "response_count": 935
+    },
+    "multilingual-vector-postprocessing-gpt-6-luna-max-bd8f388464da": {
+      "cost_usd": "0.255065000",
+      "response_count": 128
+    },
+    "multilingual-vector-postprocessing-mimo-v2.6-flash-high-b026afb5d332": {
+      "cost_usd": "0.1123905552",
+      "response_count": 90
+    },
+    "narrative-clue-search-deepseek-v4.1-flash-1017-max-386a32cb499b": {
+      "cost_usd": "0.505930272",
+      "response_count": 196
+    },
+    "narrative-clue-search-glm-5.3-flash-max-731be3d307b2": {
+      "cost_usd": "0.20988651",
+      "response_count": 138
+    },
+    "narrative-clue-search-gpt-6-luna-max-1cf5c6415fc1": {
+      "cost_usd": "1.045031690",
+      "response_count": 144
+    },
+    "narrative-clue-search-mimo-v2.6-flash-high-a2fdcdbf734d": {
+      "cost_usd": "0.1132937512",
+      "response_count": 36
+    },
+    "negative-constraint-retrieval-deepseek-v4.1-flash-1017-max-730d99e6d1f2": {
+      "cost_usd": "0.367983498",
+      "response_count": 193
+    },
+    "negative-constraint-retrieval-glm-5.3-flash-max-1671e2bccd56": {
+      "cost_usd": "4.23491778",
+      "response_count": 907
+    },
+    "negative-constraint-retrieval-gpt-6-luna-max-81a2735fc844": {
+      "cost_usd": "0.218682580",
+      "response_count": 75
+    },
+    "negative-constraint-retrieval-mimo-v2.6-flash-high-f7d032d57117": {
+      "cost_usd": "0.6580920220",
+      "response_count": 41
+    },
+    "paper-metadata-retrieval-deepseek-v4.1-flash-1017-max-1df2adb5ee2e": {
+      "cost_usd": "0.278579910",
+      "response_count": 234
+    },
+    "paper-metadata-retrieval-glm-5.3-flash-max-385a4fdfa7a5": {
+      "cost_usd": "0.64360900",
+      "response_count": 212
+    },
+    "paper-metadata-retrieval-gpt-6-luna-max-fa63e37d88e1": {
+      "cost_usd": "0.367615735",
+      "response_count": 112
+    },
+    "paper-metadata-retrieval-mimo-v2.6-flash-high-972ce5f9bae1": {
+      "cost_usd": "0.0860572048",
+      "response_count": 98
+    },
+    "protein-text-bidirectional-retrieval-deepseek-v4.1-flash-1017-max-62b5dbd407f2": {
+      "cost_usd": "0.180284442",
+      "response_count": 81
+    },
+    "protein-text-bidirectional-retrieval-glm-5.3-flash-max-659997f06088": {
+      "cost_usd": "0.12391249",
+      "response_count": 77
+    },
+    "protein-text-bidirectional-retrieval-gpt-6-luna-max-6c5de8e0b05e": {
+      "cost_usd": "0.153860645",
+      "response_count": 112
+    },
+    "protein-text-bidirectional-retrieval-mimo-v2.6-flash-high-64a6851f866b": {
+      "cost_usd": "0.1858264800",
+      "response_count": 96
+    },
+    "quantity-aware-retrieval-deepseek-v4.1-flash-1017-max-a15c0fbd51cf": {
+      "cost_usd": "0.061487586",
+      "response_count": 33
+    },
+    "quantity-aware-retrieval-glm-5.3-flash-max-6f94febca2f9": {
+      "cost_usd": "10.43162754",
+      "response_count": 1649
+    },
+    "quantity-aware-retrieval-gpt-6-luna-max-cd9edf6037c3": {
+      "cost_usd": "0.216099625",
+      "response_count": 97
+    },
+    "quantity-aware-retrieval-mimo-v2.6-flash-high-42392047040d": {
+      "cost_usd": "0.0446492928",
+      "response_count": 37
+    },
+    "query-encoder-alignment-deepseek-v4.1-flash-1017-max-f0a47d5cc3dc": {
+      "cost_usd": "0.743815110",
+      "response_count": 798
+    },
+    "query-encoder-alignment-glm-5.3-flash-max-ddea9fe232e3": {
+      "cost_usd": "11.02310513",
+      "response_count": 2175
+    },
+    "query-encoder-alignment-gpt-6-luna-max-e135b4cc14bc": {
+      "cost_usd": "0.213060005",
+      "response_count": 101
+    },
+    "query-encoder-alignment-mimo-v2.6-flash-high-7bfe10397ffb": {
+      "cost_usd": "0.0145394816",
+      "response_count": 11
+    },
+    "reasoning-query-rewriting-deepseek-v4.1-flash-1017-max-bb4adc66da66": {
+      "cost_usd": "0.413624796",
+      "response_count": 380
+    },
+    "reasoning-query-rewriting-glm-5.3-flash-max-12a030e2fbce": {
+      "cost_usd": "0.37085446",
+      "response_count": 130
+    },
+    "reasoning-query-rewriting-gpt-6-luna-max-cb1fbcd7bace": {
+      "cost_usd": "0.319863005",
+      "response_count": 131
+    },
+    "reasoning-query-rewriting-mimo-v2.6-flash-high-808a15537ba5": {
+      "cost_usd": "1.2457791472",
+      "response_count": 123
+    },
+    "rust-bm25-search-deepseek-v4.1-flash-1017-max-28890c17e54f": {
+      "cost_usd": "0.499806354",
+      "response_count": 150
+    },
+    "rust-bm25-search-glm-5.3-flash-max-205732fb3d5f": {
+      "cost_usd": "0.33235490",
+      "response_count": 153
+    },
+    "rust-bm25-search-gpt-6-luna-max-639c7d699981": {
+      "cost_usd": "0.161940160",
+      "response_count": 62
+    },
+    "rust-bm25-search-mimo-v2.6-flash-high-20c9748b5206": {
+      "cost_usd": "0.0691020008",
+      "response_count": 61
+    },
+    "same-place-image-search-deepseek-v4.1-flash-1017-max-e281375ddf5a": {
+      "cost_usd": "0.335218623",
+      "response_count": 360
+    },
+    "same-place-image-search-glm-5.3-flash-max-0c5650a9409e": {
+      "cost_usd": "0.61361081",
+      "response_count": 214
+    },
+    "same-place-image-search-gpt-6-luna-max-f29df079f279": {
+      "cost_usd": "0.168478370",
+      "response_count": 86
+    },
+    "same-place-image-search-mimo-v2.6-flash-high-597c6d564c37": {
+      "cost_usd": "0.0113785840",
+      "response_count": 24
+    },
+    "scientific-paper-qa-deepseek-v4.1-flash-1017-max-422713068cf0": {
+      "cost_usd": "0.487415028",
+      "response_count": 364
+    },
+    "scientific-paper-qa-glm-5.3-flash-max-3c68de74d7e0": {
+      "cost_usd": "2.99674921",
+      "response_count": 684
+    },
+    "scientific-paper-qa-gpt-6-luna-max-e3858ea7d08e": {
+      "cost_usd": "1.132891060",
+      "response_count": 256
+    },
+    "scientific-paper-qa-mimo-v2.6-flash-high-3f2e72195a73": {
+      "cost_usd": "0.7852676048",
+      "response_count": 141
+    },
+    "sketch-text-search-deepseek-v4.1-flash-1017-max-f19fc4a6d4e9": {
+      "cost_usd": "0.207389088",
+      "response_count": 200
+    },
+    "sketch-text-search-glm-5.3-flash-max-f9bb1eeb7294": {
+      "cost_usd": "0.19029960",
+      "response_count": 175
+    },
+    "sketch-text-search-gpt-6-luna-max-d258a9625558": {
+      "cost_usd": "0.318604700",
+      "response_count": 137
+    },
+    "sketch-text-search-mimo-v2.6-flash-high-a6d02b1f0a15": {
+      "cost_usd": "0.2012360896",
+      "response_count": 172
+    },
+    "sparse-retrieval-pruning-deepseek-v4.1-flash-1017-max-786e50a1a9a5": {
+      "cost_usd": "0.696469353",
+      "response_count": 501
+    },
+    "sparse-retrieval-pruning-glm-5.3-flash-max-7b8881589a13": {
+      "cost_usd": "1.04426524",
+      "response_count": 275
+    },
+    "sparse-retrieval-pruning-gpt-6-luna-max-98de8be9fd73": {
+      "cost_usd": "0.259981730",
+      "response_count": 105
+    },
+    "sparse-retrieval-pruning-mimo-v2.6-flash-high-e0272e827772": {
+      "cost_usd": "0.3586415000",
+      "response_count": 33
+    },
+    "spoken-query-search-deepseek-v4.1-flash-1017-max-9ac8dcb8fcc6": {
+      "cost_usd": "0.457045095",
+      "response_count": 282
+    },
+    "spoken-query-search-glm-5.3-flash-max-3f2218b19591": {
+      "cost_usd": "0.07451975",
+      "response_count": 49
+    },
+    "spoken-query-search-gpt-6-luna-max-7f985f759ae3": {
+      "cost_usd": "0.340452175",
+      "response_count": 111
+    },
+    "spoken-query-search-mimo-v2.6-flash-high-37353bb5d4de": {
+      "cost_usd": "0.5935444816",
+      "response_count": 203
+    },
+    "training-error-tracing-deepseek-v4.1-flash-1017-max-2419e1ce895c": {
+      "cost_usd": "1.026629364",
+      "response_count": 488
+    },
+    "training-error-tracing-glm-5.3-flash-max-589be09cfa9d": {
+      "cost_usd": "12.56686706",
+      "response_count": 1918
+    },
+    "training-error-tracing-gpt-6-luna-max-551ca02ceb47": {
+      "cost_usd": "0.141064010",
+      "response_count": 71
+    },
+    "training-error-tracing-mimo-v2.6-flash-high-e3fd1694f69a": {
+      "cost_usd": "0.2676026948",
+      "response_count": 200
+    },
+    "video-moment-search-deepseek-v4.1-flash-1017-max-18c138d537f8": {
+      "cost_usd": "0.009440160",
+      "response_count": 4
+    },
+    "video-moment-search-glm-5.3-flash-max-5295dd034b9a": {
+      "cost_usd": "0.23340820",
+      "response_count": 99
+    },
+    "video-moment-search-gpt-6-luna-max-cbab874afc52": {
+      "cost_usd": "0.109480620",
+      "response_count": 41
+    },
+    "video-moment-search-mimo-v2.6-flash-high-ab172ae1fde0": {
+      "cost_usd": "0.0274262856",
+      "response_count": 51
+    },
+    "visual-document-qa-deepseek-v4.1-flash-1017-max-1c98bbda6bb2": {
+      "cost_usd": "0.916047588",
+      "response_count": 212
+    },
+    "visual-document-qa-glm-5.3-flash-max-de86daefb152": {
+      "cost_usd": "0.98935309",
+      "response_count": 266
+    },
+    "visual-document-qa-gpt-6-luna-max-6ddef3fe3d09": {
+      "cost_usd": "0.308572355",
+      "response_count": 110
+    },
+    "visual-document-qa-mimo-v2.6-flash-high-009552f63a14": {
+      "cost_usd": "0.0634512424",
+      "response_count": 113
+    }
+  },
+  "usage_sha256": "883b4a876a873693babc78091c580073f80642c157bd9a59efe40e4a9a201a55"
+}

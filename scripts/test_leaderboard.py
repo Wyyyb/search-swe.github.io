@@ -100,7 +100,7 @@ class ScoreTests(unittest.TestCase):
     def test_valid_zero_and_missing_usage(self):
         trials = [{'score': score, 'tokens': {'total_tokens': tokens}, 'agent_seconds': seconds}
                   for score, tokens, seconds in [(0, 12, 5), (90, None, None), (0, 10, 6)]]
-        self.assertEqual(build.stats(trials), {'score': 30, 'tokens': None, 'seconds': None})
+        self.assertEqual(build.stats(trials), {'score': 30, 'tokens': None, 'cost': None, 'seconds': None})
 
     def test_all_is_task_weighted_not_mean_of_hardware_means(self):
         self.assertEqual(build.mean([0, 0, 90]), 30)
@@ -109,7 +109,7 @@ class ScoreTests(unittest.TestCase):
     def test_token_overview_is_total_while_score_and_time_are_means(self):
         trials = [{'score': score, 'tokens': {'total_tokens': tokens}, 'agent_seconds': seconds}
                   for score, tokens, seconds in [(0, 12, 5), (90, 30, 10)]]
-        self.assertEqual(build.stats(trials), {'score': 45, 'tokens': 42, 'seconds': 7.5})
+        self.assertEqual(build.stats(trials), {'score': 45, 'tokens': 42, 'cost': None, 'seconds': 7.5})
         self.assertIsNone(build.total([12, None]))
 
 
@@ -139,7 +139,7 @@ class SnapshotTests(unittest.TestCase):
 
     def test_generated_routes_and_no_script_injection(self):
         pages = build.generate()
-        self.assertEqual(len(pages), 194)
+        self.assertEqual(len(pages), 195)  # 194 pages plus the cost-enriched download.
         for trial in self.snapshot['trials']:
             self.assertIn(build.ROOT / f'leaderboard/trials/{trial["id"]}/index.html', pages)
         rendered = build.page('<script>', '<p>test</p>', 'trial', {'message': '</script><script>alert(1)'}, self.snapshot)

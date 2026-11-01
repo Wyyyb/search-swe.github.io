@@ -139,7 +139,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     assert.equal(new URL(page.url()).searchParams.get('scope'), 'gpu');
     assert.equal(await page.locator('#sort').inputValue(), 'date-asc');
     await page.locator('#filter').fill('absent-model');
-    assert(await page.locator('.empty-state').isVisible());
+    assert(await page.locator('#panel-table .empty-state').isVisible());
 
     // Metadata comes from the real step, even when jumping or filtering.
     const codeContext = snapshot.trials.find(t => t.task === 'code-context-retrieval' && t.configuration.model === 'openai/gpt-6-luna');

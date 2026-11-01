@@ -18,6 +18,7 @@ From the homepage repository root:
 
 ```bash
 python scripts/import_results.py --jobs /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs
+python scripts/leaderboard_costs.py --usage /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/traj-analysis/leaderboard-data/usage.json
 python scripts/build_leaderboard.py
 python scripts/build_tasks.py
 python -m http.server 7788 --bind 127.0.0.1
@@ -63,8 +64,26 @@ Narrow screens scroll the table horizontally instead of shrinking its text.
   Additional reasoning counters appear in Agent. Reasoning is not added a second
   time. Verifier/task-internal API usage is excluded. Regrading uses original
   coding usage once. Missing values remain missing.
-- Dollar estimates are deliberately absent. Reported cache usage does not
-  establish cache lifetime, actual provider routing, or paid cost.
+- Cost is the sum of selected coding requests repriced at the frozen official
+  USD API rates in `official-pricing.json`. The displayed label is **Cost**;
+  a short note explains that it is estimated. Standard real-time rates apply,
+  using fixed DeepSeek off-peak prices for every request, regardless of run time,
+  and Xiaomi overseas USD prices. GPT-6 Luna
+  uses long-context rates only when an individual request exceeds 272,000 input
+  tokens. Ordinary input = input − cached reads − cache writes; each bucket
+  is charged once, and reasoning is already included in output. Providers
+  without a separate write surcharge charge cache creation inputs at the
+  ordinary input rate. Source URLs and the price date are retained in the table.
+- `scripts/leaderboard_costs.py` matches native response usage to every selected
+  task/model/effort, verifies trajectory hashes and all published token totals,
+  deduplicates response IDs, and calculates with decimal arithmetic before
+  display rounding. `costs.json` binds the derived amounts to the exact result,
+  usage and pricing snapshots. Rebuild it when any of these inputs change;
+  stale or partial cost coverage fails the page build.
+- Cost metadata is maintained by the website separately from the verified HF
+  trajectory release. `/leaderboard/results.json` downloads the result summary
+  with costs, pricing sources and immutable HF trace URLs. The original
+  `release.json`, its verified hash, and the HF files remain unchanged.
 - Release Date is the model release date recorded in the analysis snapshot’s
   `leaderboard-data/pricing.json`, not the evaluation date. The importer verifies
   that file against `results.json`’s hash and exports each date and its source URL.
@@ -73,15 +92,29 @@ Narrow screens scroll the table horizontally instead of shrinking its text.
   Original trajectory and final reward hashes remain separately visible.
 
 The main table shows `Model (effort)` and `Agent (vVersion)` on one line. Provider
-information remains in entry details. Score, Release Date and Total tokens can
+information remains in entry details. Score, Release Date, Total tokens and Cost can
 be sorted in either direction using the column headers or Sort selector. Sort
 state survives scope changes, search, reloads and navigation back from an entry;
 ranks continue to reflect scores in the selected task scope. Old `sort=score`
 and `sort=tokens` URLs retain their previous descending-score/ascending-token
-meaning. Entry task tables also support both score/token sort directions, and
+meaning. Entry task tables also support both score/token/cost sort directions, and
 keep Hardware and Agent centered, with the version inline as `Codex (v0.164.0)`. The main board omits metric cards and agent time. Entry rows include Provider
-and Agent time; durations use `2h 5min` / `35min`. Scores are labeled with `(%)`.
-Trial summaries show score, three token counters, duration and step count.
+and Agent time, with the individual trial's Cost before the final Trajectory column; durations use
+`2h 5min` / `35min`. Scores are labeled with `(%)`.
+Trial summaries show six metrics: score, input tokens (with cached tokens as a
+secondary line), output tokens, duration, Cost and step count.
+Entry and trial pages share the main board's short pricing note. Amounts display
+in USD with two decimal places; totals and sorting use unrounded values.
+
+The leaderboard defaults to **Table**; **Pareto** shows total cost versus mean
+task score for the same All / CPU / GPU selection. Its cost axis is logarithmic
+(linear if a genuinely free model is present). Hover or keyboard-focus points
+for values, and follow points or legend links to model results. View, search,
+scope and sort survive reloads and the return link from an entry. Search hides
+models without redefining which models are Pareto-optimal in the selected
+hardware scope. Dominance uses unrounded values; equal points do not dominate
+one another. The chart is rendered locally from the embedded summary, with no
+chart library, inference calls or additional trajectory downloads.
 
 ## Viewer and export boundaries
 
@@ -177,8 +210,11 @@ unchanged; exported JSON contains no local host source paths in its metadata.
 python -m unittest discover -s scripts -p 'test_*.py'
 python scripts/import_results.py --jobs /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs --check
 python scripts/build_leaderboard.py --check
+python scripts/leaderboard_costs.py --usage /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/traj-analysis/leaderboard-data/usage.json --check
 python scripts/build_tasks.py --check
 node --check leaderboard.js
+node --check leaderboard-pareto.js
+node scripts/test_pareto.cjs
 node --check trajectory-viewer.js
 node --check trial-files.js
 ```
@@ -186,6 +222,8 @@ node --check trial-files.js
 With Playwright available in the Node module search path and the preview server
 running, run `node scripts/test_leaderboard_browser.cjs`. Set
 `LEADERBOARD_ORIGIN` to use a different local server address.
+Run `node scripts/test_leaderboard_costs_browser.cjs` for cost sorting, chart/table
+parity across hardware scopes, keyboard tabs, links, empty states and mobile layout.
 
 The importer check verifies deterministic exports against the current local
 source snapshot; it does not modify files. Static summaries also work without

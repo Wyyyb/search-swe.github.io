@@ -79,7 +79,7 @@ class StorageTests(unittest.TestCase):
 
     def test_every_production_trace_and_download_uses_same_immutable_commit(self):
         pages = build.generate(self.config, production=True)
-        self.assertEqual(len(pages), 2 + len(self.snapshot['entries']) + len(self.snapshot['trials']))
+        self.assertEqual(len(pages), 3 + len(self.snapshot['entries']) + len(self.snapshot['trials']))
         prefix = f'https://huggingface.co/datasets/{REPO_ID}/resolve/{"a" * 40}/releases/test/'
         for html in pages.values():
             self.assertNotIn('/data/leaderboard/traces/', html)
@@ -89,6 +89,10 @@ class StorageTests(unittest.TestCase):
         html = pages[build.ROOT / f'leaderboard/trials/{trial["id"]}/index.html']
         for file in ['manifest.json', 'trajectory.json.gz', 'evaluation.json']:
             self.assertIn(prefix + f'trials/{trial["id"]}/{file}', html)
+        download = json.loads(pages[build.ROOT / 'leaderboard/results.json'])
+        self.assertEqual(download['cost_methodology']['type'], 'estimated')
+        self.assertTrue(all(t['cost_usd'] >= 0 for t in download['trials']))
+        self.assertTrue(all(t['trajectory_url'].startswith(prefix) for t in download['trials']))
 
     def test_no_production_fallback_to_local_or_mutable_remote_data(self):
         for provider in ['local', 'preview']:

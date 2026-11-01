@@ -4,6 +4,22 @@
 从公开的 HF Dataset [`search-swe/trajectories`](https://huggingface.co/datasets/search-swe/trajectories)
 匿名按需读取。浏览器不需要 HF Token。
 
+Cost 按官网保存的官方 API 美元价目表，使用选中 coding 请求的 token 用量估算。
+`content/leaderboard/official-pricing.json` 保存价格、档位规则及官方来源；
+`content/leaderboard/costs.json` 保存按请求去重后的逐 trial 费用，并绑定原始结果快照。
+网站构建会生成带费用的 `/leaderboard/results.json` 下载文件，轨迹 URL 继续使用
+已验证的 HF commit。价格更新不需要重传轨迹，也不改写既有 HF 快照。
+
+更新选中结果或价目表后，在生成官网页面之前重算费用：
+
+```bash
+python scripts/leaderboard_costs.py --usage /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/traj-analysis/leaderboard-data/usage.json
+python scripts/build_leaderboard.py --production
+```
+
+费用重算只读取本地用量，不调用模型或账户账单接口。普通网站构建直接使用已提交的
+费用补充文件；如果结果或价目表发生变化而费用尚未重算，构建会明确失败。
+
 ## 当前准备好的 47 题更新命令
 
 2026-10-31 撤销 `deletion-resilient-vector-search` 和
