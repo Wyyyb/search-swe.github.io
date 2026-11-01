@@ -41,6 +41,6 @@ max(0, submitted Accuracy@1 - original-backbone Accuracy@1)
 
 Final reward equals this gain when evaluation is valid and the trajectory audit passes. Invalid evaluation, timeouts, or a failed audit receive a reward of `0`.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/1d73c6f9c4a90ba922b7572d9395a6f40661bbb2/tasks/code-embedding-finetuning/instruction.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/1d73c6f9c4a90ba922b7572d9395a6f40661bbb2/tasks/code-embedding-finetuning/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-embedding-finetuning/instruction.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-embedding-finetuning/task.toml)
 for the complete contract at the reviewed benchmark revision.

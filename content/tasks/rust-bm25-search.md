@@ -125,5 +125,5 @@ receive no separate bonus. Startup measurements do not evict the OS file cache;
 RSS excludes children and unmapped page cache, unlike the container memory cap.
 QPS reflects concurrency-one throughput.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ebe2e7a7a5592890a81ba10c557d364ba41e9d16/tasks/rust-bm25-search/instruction.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ebe2e7a7a5592890a81ba10c557d364ba41e9d16/tasks/rust-bm25-search/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/rust-bm25-search/instruction.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/rust-bm25-search/task.toml).

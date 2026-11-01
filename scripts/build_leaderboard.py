@@ -63,11 +63,11 @@ def page(title, body, kind, data, snapshot):
 {MARKER}
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)} — Search-SWE</title><meta name="description" content="Search-SWE evaluation results and real coding agent trajectories.">
-<link rel="icon" href="/assets/logo.png"><link rel="preload" href="/assets/fonts/Geist.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/home-sections.css?v=6"><link rel="stylesheet" href="/leaderboard.css?v=18">
+<link rel="icon" href="/assets/logo.png"><link rel="preload" href="/assets/fonts/Geist.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/home-sections.css?v=8"><link rel="stylesheet" href="/leaderboard.css?v=18">
 <script src="/leaderboard.js?v=6" defer></script>{'<script src="/trajectory-viewer.js?v=10" defer></script><script src="/trial-files.js?v=3" defer></script>' if kind == 'trial' else ''}</head>
 <body id="top" data-page="{kind}"><a class="skip-link" href="#main-content">Skip to content</a>
 <header class="home-header"><div class="home-header-inner"><a class="home-brand" href="/"><img src="/assets/logo.png" width="32" height="32" alt=""><span>Search-SWE</span></a>
-<nav class="home-nav" aria-label="Main navigation"><a href="/">Overview</a><a href="/tasks/">Tasks</a><a href="/leaderboard/" aria-current="page">Leaderboard</a><a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub ↗</a></nav></div></header>
+<nav class="home-nav" aria-label="Main navigation"><a href="/">Overview</a><a href="/tasks/">Tasks</a><a href="/leaderboard/" aria-current="page">Leaderboard</a><a href="/evaluation/">Evaluation</a><a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub ↗</a></nav></div></header>
 <main id="main-content" class="lb-main">{body}</main>
 <footer class="lb-footer"><span>Search-SWE · VectorSpaceLab</span><span>{local_label}Snapshot {esc(snapshot['observed_at'][:10])}</span><a href="#top">Back to top ↑</a></footer>
 <script type="application/json" id="page-data">{embedded}</script></body></html>\n'''

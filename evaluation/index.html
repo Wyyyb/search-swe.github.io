@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Run Search-SWE evaluations with the CLI or your coding agent. Install, configure a run, and inspect scores and trajectories." />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Evaluation — Search-SWE</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png" />
+    <link rel="apple-touch-icon" href="../assets/logo.png" />
+    <link rel="stylesheet" href="../home-sections.css?v=8" />
+    <link rel="stylesheet" href="evaluation.css?v=2" />
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="home-header">
+      <div class="home-header-inner">
+        <a class="home-brand" href="../" aria-label="Search-SWE home">
+          <img src="../assets/logo.png" width="32" height="32" alt="" />
+          <span>Search-SWE</span>
+        </a>
+        <nav class="home-nav" aria-label="Main navigation">
+          <a href="../">Overview</a>
+          <a href="../tasks/">Tasks</a>
+          <a href="../leaderboard/">Leaderboard</a>
+          <a href="./" aria-current="page">Evaluation</a>
+          <a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content" class="evaluation-page">
+      <header id="evaluation" class="home-intro evaluation-intro">
+        <div class="home-section-heading">
+          <h1>Evaluation</h1>
+          <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/quickstart.md" target="_blank" rel="noreferrer">Full guide <span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="evaluation-lead">Run Search-SWE from your terminal or through your coding agent. Both use the same evaluation pipeline.</p>
+        <nav class="evaluation-routes" aria-label="Evaluation methods">
+          <a href="#cli">
+            <span class="evaluation-route-title">CLI <span aria-hidden="true">↓</span></span>
+            <span>Choose your settings in an interactive terminal.</span>
+          </a>
+          <a href="#coding-agent">
+            <span class="evaluation-route-title">Coding agent <span aria-hidden="true">↓</span></span>
+            <span>Describe an experiment and let your agent run it.</span>
+          </a>
+        </nav>
+      </header>
+
+      <aside class="evaluation-requirements" aria-labelledby="requirements-title">
+        <h2 id="requirements-title">Before you start</h2>
+        <div>
+          <p>Python 3.12+, a native Linux x86_64 host, Docker and Git. Check the <a href="../tasks/">selected tasks</a> for CPU, memory and GPU requirements; some also need <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#bounded-task-storage" target="_blank" rel="noreferrer">sudo and FUSE</a>.</p>
+          <p>Enabled OpenRouter submission keys require a fixed <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md" target="_blank" rel="noreferrer">model allowlist</a>: <strong>47 models</strong> for the shared key, <strong>17</strong> for reasoning-query-rewriting. Apply it in OpenRouter before entering the key. Coding-agent and judge keys use separate model access.</p>
+          <p>The CLI checks these restrictions before saving settings or running tasks. Checks send short API requests; accepted requests may incur small charges.</p>
+        </div>
+      </aside>
+
+      <section id="cli" class="evaluation-chapter" aria-labelledby="cli-title">
+        <header class="evaluation-chapter-heading">
+          <div>
+            <h2 id="cli-title">CLI</h2>
+            <p>Configure and launch an evaluation from your terminal.</p>
+          </div>
+          <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/cli.md" target="_blank" rel="noreferrer">CLI reference <span aria-hidden="true">↗</span></a>
+        </header>
+        <ol class="evaluation-steps">
+          <li>
+            <div>
+              <h3>Install the CLI</h3>
+              <p>Install the CLI in your Python environment:</p>
+              <pre><code>pip install search-swe</code></pre>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Choose your setting and tasks</h3>
+              <pre><code>search-swe run</code></pre>
+              <p>The wizard finds your checkout or helps you clone one to <code>~/Search-SWE</code> or a custom path, then remembers its location.</p>
+              <p>Choose Codex, Claude Code or Pi with OpenRouter or a supported direct provider. Select the model and reasoning effort, enter missing keys, then select tasks and configure their services.</p>
+              <p class="evaluation-hint"><strong>Default setting:</strong> Codex + OpenRouter + GPT-6 Luna (max).</p>
+              <p class="evaluation-hint">See <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/agents.md" target="_blank" rel="noreferrer">supported agents and providers</a>. For Pi, <code>search-swe pi-models</code> lists providers and their model counts; add <code>--provider NAME</code> for exact model IDs.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Review resources and start</h3>
+              <p>Review the task and cache locations, disk-space estimate and resource requirements. Choose sequential or parallel execution, then confirm to download and verify assets, allocate resources and launch the run.</p>
+              <p class="evaluation-hint">The Hugging Face cache takes space in addition to task files. Set <code>HF_HUB_CACHE</code> in your shell or selected <code>.env</code> to move it to another disk; task copies stay in the checkout. See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/assets.md#disk-space-and-cache-locations" target="_blank" rel="noreferrer">storage guide</a>.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section id="coding-agent" class="evaluation-chapter" aria-labelledby="agent-title">
+        <header class="evaluation-chapter-heading">
+          <div>
+            <h2 id="agent-title">Coding agent</h2>
+            <p>Let your agent configure the run, monitor progress and report results.</p>
+          </div>
+          <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/quickstart.md#run-with-your-agent" target="_blank" rel="noreferrer">Agent guide <span aria-hidden="true">↗</span></a>
+        </header>
+        <ol class="evaluation-steps">
+          <li>
+            <div>
+              <h3>Prepare the evaluation host</h3>
+              <p>Select or clone a checkout and save your settings without starting an evaluation:</p>
+              <pre><code>pip install search-swe
+search-swe configure</code></pre>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Add the evaluation skill</h3>
+              <p>Run this in your agent’s workspace, then reload its skills or start a new session:</p>
+              <pre><code>npx skills add VectorSpaceLab/Search-SWE --skill run-searchswe-evaluation -a codex</code></pre>
+              <p class="evaluation-hint">Requires Node.js 22.20+. The example uses Codex; replace <code>codex</code> with your supported agent, such as <code>claude-code</code>.</p>
+              <p class="evaluation-hint">For other installers and setup options, see the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/quickstart.md#skill-installation-options" target="_blank" rel="noreferrer">installation guide</a>.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Describe your experiment</h3>
+              <p>Give your agent the checkout location, Python environment, model settings and tasks. For example:</p>
+              <blockquote>Use run-searchswe-evaluation with the checkout at /path/to/Search-SWE. Run agentic-search and agentic-search-vectorless with Codex + OpenRouter + openai/gpt-6-luna, max reasoning and concurrency 2. Reuse my .env, monitor progress and report scores, verifier health and result paths.</blockquote>
+              <p class="evaluation-hint">The agent coordinating the run can differ from the agent and model being evaluated.</p>
+              <p class="evaluation-hint">If keys are missing, the agent guides you through local prompts or your private <code>.env</code>. Keep key values out of chat.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section id="results" class="evaluation-results" aria-labelledby="results-title">
+        <h2 id="results-title">Read the results</h2>
+        <p>Both workflows save results in the selected checkout:</p>
+        <pre><code>jobs/evaluations/&lt;run&gt;/</code></pre>
+        <p>Open the printed path and follow <code>run.json</code> to each task’s results and logs. Check Harbor scores and verifier health; process completion alone does not mean a passing score.</p>
+        <p id="construction">Harbor isolates coding and verification. Scores reflect held-out search quality, correctness, resource limits and evaluation integrity.</p>
+        <a class="evaluation-results-link" href="../leaderboard/">Explore published scores and trajectories <span aria-hidden="true">→</span></a>
+      </section>
+
+      <footer class="home-footer">
+        <span>Search-SWE · VectorSpaceLab</span>
+        <a href="#top">Back to top ↑</a>
+      </footer>
+    </main>
+  </body>
+</html>

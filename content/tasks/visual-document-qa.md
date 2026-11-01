@@ -15,6 +15,13 @@ Answer questions from long documents containing text, charts and tables, includi
 
 Build: 14,400 seconds. Up to 2,500 requests in two calls of at most 1,250, each allowed 10,800 seconds. No GPU; only documented external resources are permitted.
 
+### Host configuration
+
+Set `VERIFIER_OPENAI_API_KEY` to an OpenRouter key allowing
+`deepseek/deepseek-v4.1-flash` for trajectory auditing and `google/gemini-2.5-flash`
+for the fixed document-answer judge. Configure submission services separately
+using the [submission-key guide](https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md).
+
 ## Public input and output contract
 
 ### Inputs
@@ -75,7 +82,7 @@ rather than establishing a low baseline or model score.
 
 Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/1d73c6f9c4a90ba922b7572d9395a6f40661bbb2/tasks/visual-document-qa/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/1d73c6f9c4a90ba922b7572d9395a6f40661bbb2/tasks/visual-document-qa/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/1d73c6f9c4a90ba922b7572d9395a6f40661bbb2/tasks/visual-document-qa/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/visual-document-qa/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/visual-document-qa/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/visual-document-qa/task.toml)
 for the complete contract at the synchronized benchmark revision.

@@ -15,6 +15,17 @@ Compress meeting history into a small readable memory, then retrieve notes and a
 
 No local model or GPU. Build: 300 seconds; all searches together: 150 seconds; all answers together: 1,800 seconds. Jina is allowed for preparation/search, while permitted generation is restricted to answering. Evaluation uses restricted API transports, not provider credentials in submitted processes.
 
+### Host configuration
+
+`OPENROUTER_API_KEY` is required at startup for the verifier's answerer gateway,
+even when retrieval runs locally. Apply the [shared 47-model profile](https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md);
+the gateway further restricts generation to the four models in the task's resource
+policy. `JINA_API_KEY` is optional for embedding and reranking.
+
+Evidence and answer grading use `ANSWER_JUDGE_MODEL_NAME` at the fixed OpenRouter
+endpoint. The separate `VERIFIER_OPENAI_API_KEY` must allow that model and the
+`deepseek/deepseek-v4.1-flash` trajectory judge.
+
 ## Public input and output contract
 
 ### Inputs
@@ -72,7 +83,7 @@ invalidates the measurement rather than establishing model quality.
 
 Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/icsi-meeting-memory/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/icsi-meeting-memory/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/icsi-meeting-memory/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/task.toml)
 for the complete contract at the synchronized benchmark revision.

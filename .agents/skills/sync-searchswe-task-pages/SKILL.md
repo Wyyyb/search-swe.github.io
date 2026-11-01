@@ -20,7 +20,7 @@ or deployment.
 Read the site's `content/tasks/README.md`, `content/tasks/catalog.json`, and
 `scripts/build_tasks.py`. Check the initial generated state with
 `python scripts/build_tasks.py --check` and note pre-existing differences.
-Consult the benchmark's current `docs/contributing.md` and task workflow for
+Consult the benchmark's current `docs/contributing/tasks.md` and task workflow for
 the naming and package conventions that apply to the update. These documents
 provide context; website synchronization does not require creating a benchmark
 task, running its agent/verifier, downloading datasets, or publishing assets.
@@ -115,7 +115,7 @@ normally append with `status: "setting"` and `featured: false`, so the catalog
 grows without expanding the homepage's curated selection.
 
 When contribution guidance is in scope, update only the relevant summary in
-`index.html` against the benchmark's current `docs/contributing.md`. Keep it
+`index.html` against the benchmark's current `docs/contributing/tasks.md`. Keep it
 brief and link to the authoritative guide instead of copying its full workflow.
 The benchmark's rule that ordinary contributions stay inside their task package
 does not eliminate this separate website catalog: update the site's catalog and

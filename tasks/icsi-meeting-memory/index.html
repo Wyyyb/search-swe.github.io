@@ -9,7 +9,7 @@
   <title>ICSI Meeting Memory — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
   <link rel="apple-touch-icon" href="../../assets/logo.png" />
-  <link rel="stylesheet" href="../../home-sections.css?v=6" />
+  <link rel="stylesheet" href="../../home-sections.css?v=8" />
   <link rel="stylesheet" href="../../task-pages.css?v=5" />
 </head>
 <body id="top">
@@ -24,6 +24,7 @@
       <a href="../../">Overview</a>
       <a href="../../tasks/" aria-current="true">Tasks</a>
       <a href="../../leaderboard/">Leaderboard</a>
+      <a href="../../evaluation/">Evaluation</a>
       <a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
   </div>
@@ -41,10 +42,13 @@
         <dl class="task-specs"><div><dt>Domain</dt><dd><code>compact meeting memory</code></dd></div><div><dt>Primary focus</dt><dd><code>ICSI Meeting Memory</code></dd></div><div><dt>Primary metric</dt><dd><code>EvidenceGroundedAnswerAccuracy</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>compact meeting memory</span><span>search-swe</span></div>
       </header>
-      <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
+      <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#host-configuration" class="toc-subsection">Host configuration</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
       <div class="task-prose"><h2 id="runtime-and-requirements">Runtime and requirements</h2>
 <ul><li><strong>Agent budget</strong>: <code>2 hours</code></li><li><strong>Compute</strong>: <code>8</code> CPUs, <code>8 GiB</code> RAM, <code>8 GiB</code> storage; <code>0</code> GPU(s)</li></ul>
 <p>No local model or GPU. Build: 300 seconds; all searches together: 150 seconds; all answers together: 1,800 seconds. Jina is allowed for preparation/search, while permitted generation is restricted to answering. Evaluation uses restricted API transports, not provider credentials in submitted processes.</p>
+<h3 id="host-configuration">Host configuration</h3>
+<p><code>OPENROUTER_API_KEY</code> is required at startup for the verifier&#x27;s answerer gateway, even when retrieval runs locally. Apply the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md">shared 47-model profile</a>; the gateway further restricts generation to the four models in the task&#x27;s resource policy. <code>JINA_API_KEY</code> is optional for embedding and reranking.</p>
+<p>Evidence and answer grading use <code>ANSWER_JUDGE_MODEL_NAME</code> at the fixed OpenRouter endpoint. The separate <code>VERIFIER_OPENAI_API_KEY</code> must allow that model and the <code>deepseek/deepseek-v4.1-flash</code> trajectory judge.</p>
 <h2 id="public-input-and-output-contract">Public input and output contract</h2>
 <h3 id="inputs">Inputs</h3>
 <p><code>/task/data/history.jsonl</code> covers 67 meetings. Five public questions, reference answers and evidence are under <code>/task/data/validation/</code>; 143 evaluation questions are withheld.</p>
@@ -65,14 +69,14 @@
 <h3 id="validity-and-failure-handling">Validity and failure handling</h3>
 <p>The four files, executable permissions, JSON syntax and size, index build, script completion and output formats must satisfy the contract. A failed submitted process or invalid output invalidates the submission. Empty retrieval is an evidence miss. A malformed judge response or model-service failure invalidates the measurement rather than establishing model quality.</p>
 <p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/icsi-meeting-memory/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/icsi-meeting-memory/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/icsi-meeting-memory/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../financial-report-qa/"><span>Previous task</span><strong>Financial-Report Evidence Retrieval</strong></a><a href="../incremental-vector-search/"><span>Next task</span><strong>Incremental Vector Search</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>
   <a href="#top">Back to top ↑</a>
 </footer>
     </article>
-    <aside class="task-toc"><nav aria-label="On this page"><p>On this page</p><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></aside>
+    <aside class="task-toc"><nav aria-label="On this page"><p>On this page</p><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#host-configuration" class="toc-subsection">Host configuration</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></aside>
   </div>
 </main>
 <script src="../../task-pages.js?v=1" defer></script>

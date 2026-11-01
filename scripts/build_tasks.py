@@ -152,6 +152,7 @@ def header(prefix: str) -> str:
       <a href="{prefix or './'}">Overview</a>
       <a href="{prefix}tasks/" aria-current="{('page' if not prefix else 'true')}">Tasks</a>
       <a href="{prefix}leaderboard/">Leaderboard</a>
+      <a href="{prefix}evaluation/">Evaluation</a>
       <a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
   </div>
@@ -177,7 +178,7 @@ def document(title: str, description: str, prefix: str, body: str) -> str:
   <title>{esc(title)} — Search-SWE</title>
   <link rel="icon" type="image/png" href="{prefix}assets/logo.png" />
   <link rel="apple-touch-icon" href="{prefix}assets/logo.png" />
-  <link rel="stylesheet" href="{prefix}home-sections.css?v=6" />
+  <link rel="stylesheet" href="{prefix}home-sections.css?v=8" />
   <link rel="stylesheet" href="{prefix}task-pages.css?v=5" />
 </head>
 <body id="top">

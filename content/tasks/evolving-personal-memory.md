@@ -15,6 +15,13 @@ Answer questions from a person’s conversation history as it stood at a specifi
 
 Build and each search call: 1,800 seconds; up to 300 questions per search call. Answers: 600 seconds each, at most eight concurrent processes and a shared 7,200-second answer phase. Follow the documented API allowlist.
 
+### Host configuration
+
+Set `VERIFIER_OPENAI_API_KEY` to an OpenRouter key allowing the fixed judge models
+`deepseek/deepseek-v4.1-flash`, `qwen/qwen3.6-35b-a3b` and `qwen/qwen3.5-9b`.
+This key serves trajectory auditing and answer judging. Configure submission
+services separately using the [submission-key guide](https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md).
+
 ## Public input and output contract
 
 ### Inputs
@@ -72,7 +79,7 @@ measurement and must not be interpreted as model quality.
 
 Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/evolving-personal-memory/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/evolving-personal-memory/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/b17b701dfce01dc043e50180ed1bfe733b40f612/tasks/evolving-personal-memory/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/task.toml)
 for the complete contract at the synchronized benchmark revision.

@@ -24,7 +24,7 @@ Optional OpenRouter and Jina calls must follow the exact resource allowlist in
 ### Inputs
 
 * `/task/data/corpus.sqlite` — the supplied biomedical graph.
-* `/task/data/validation/queries.jsonl` — three public example questions.
+* `/task/data/validation/queries.jsonl` — eight public example questions.
 * `/task/data/validation/ground_truth.jsonl` — their complete answer sets.
 
 Twenty held-out questions exercise different graph query plans.
@@ -58,6 +58,6 @@ A per-question timeout contributes zero for that question. Build failure,
 non-timeout execution failure, invalid output or a failed mandatory trajectory
 compliance audit sets the overall reward to zero. The audit does not judge relevance.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/dab2e1e04904ff2731bf81849c65c639631c9499/tasks/biomedical-graph-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/dab2e1e04904ff2731bf81849c65c639631c9499/tasks/biomedical-graph-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/dab2e1e04904ff2731bf81849c65c639631c9499/tasks/biomedical-graph-retrieval/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/biomedical-graph-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/biomedical-graph-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/biomedical-graph-retrieval/task.toml).

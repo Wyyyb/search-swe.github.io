@@ -43,6 +43,6 @@ score = 100 * reward
 
 Failed execution or structurally invalid output makes the entire submission invalid. A separate trajectory audit checks task and resource compliance and sets the final reward to `0` if it fails. Submission API access, answer-judge credentials, and trajectory-audit credentials are separate security domains.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/561461e2619f269ffe3c8c44a541086eee17129f/tasks/scientific-paper-qa/instruction.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/561461e2619f269ffe3c8c44a541086eee17129f/tasks/scientific-paper-qa/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/scientific-paper-qa/instruction.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/scientific-paper-qa/task.toml)
 for the complete contract at the reviewed benchmark revision.

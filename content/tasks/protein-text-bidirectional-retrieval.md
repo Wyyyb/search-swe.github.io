@@ -10,7 +10,7 @@ Learn compact representations that retrieve official protein–description pairs
 
 ## Runtime and requirements
 
-* **Agent budget**: `1 hours`
+* **Agent budget**: `1 hour`
 * **Compute**: `16` CPUs, `16 GiB` RAM, `100 GiB` storage; `1` GPU(s)
 
 Offline A100 40 GB. Entire submission: at most 256 KiB, including code and learned state. Four independent dataset/direction groups each have 900 seconds for preparation, 3 seconds hard query timeout and p95 <=1 second. Final vectors have exactly 64 dimensions.
@@ -33,7 +33,7 @@ Each of 10,000 official pairs per dataset succeeds only when both independent di
 
 Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/561461e2619f269ffe3c8c44a541086eee17129f/tasks/protein-text-bidirectional-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/561461e2619f269ffe3c8c44a541086eee17129f/tasks/protein-text-bidirectional-retrieval/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/561461e2619f269ffe3c8c44a541086eee17129f/tasks/protein-text-bidirectional-retrieval/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/protein-text-bidirectional-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/protein-text-bidirectional-retrieval/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/protein-text-bidirectional-retrieval/task.toml)
 for the complete contract at the synchronized benchmark revision.
