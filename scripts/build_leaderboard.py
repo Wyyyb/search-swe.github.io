@@ -67,7 +67,7 @@ def page(title, body, kind, data, snapshot):
 <script src="/leaderboard.js?v=6" defer></script>{'<script src="/trajectory-viewer.js?v=10" defer></script><script src="/trial-files.js?v=3" defer></script>' if kind == 'trial' else ''}</head>
 <body id="top" data-page="{kind}"><a class="skip-link" href="#main-content">Skip to content</a>
 <header class="home-header"><div class="home-header-inner"><a class="home-brand" href="/"><img src="/assets/logo.png" width="32" height="32" alt=""><span>Search-SWE</span></a>
-<nav class="home-nav" aria-label="Main navigation"><a href="/">Overview</a><a href="/tasks/">Tasks</a><a href="/leaderboard/" aria-current="page">Leaderboard</a><a href="/evaluation/">Evaluation</a><a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub ↗</a></nav></div></header>
+<nav class="home-nav" aria-label="Main navigation"><a href="/">Overview</a><a href="/evaluation/">Run</a><a href="/leaderboard/" aria-current="page">Leaderboard</a><a href="/tasks/">Tasks</a><a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub ↗</a></nav></div></header>
 <main id="main-content" class="lb-main">{body}</main>
 <footer class="lb-footer"><span>Search-SWE · VectorSpaceLab</span><span>{local_label}Snapshot {esc(snapshot['observed_at'][:10])}</span><a href="#top">Back to top ↑</a></footer>
 <script type="application/json" id="page-data">{embedded}</script></body></html>\n'''

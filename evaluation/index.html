@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Run Search-SWE evaluations with the CLI or your coding agent. Install, configure a run, and inspect scores and trajectories." />
     <meta name="theme-color" content="#ffffff" />
-    <title>Evaluation — Search-SWE</title>
+    <title>Run — Search-SWE</title>
     <link rel="icon" type="image/png" href="../assets/logo.png" />
     <link rel="apple-touch-icon" href="../assets/logo.png" />
     <link rel="stylesheet" href="../home-sections.css?v=8" />
@@ -21,9 +21,9 @@
         </a>
         <nav class="home-nav" aria-label="Main navigation">
           <a href="../">Overview</a>
-          <a href="../tasks/">Tasks</a>
+          <a href="./" aria-current="page">Run</a>
           <a href="../leaderboard/">Leaderboard</a>
-          <a href="./" aria-current="page">Evaluation</a>
+          <a href="../tasks/">Tasks</a>
           <a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
         </nav>
       </div>
@@ -32,11 +32,11 @@
     <main id="main-content" class="evaluation-page">
       <header id="evaluation" class="home-intro evaluation-intro">
         <div class="home-section-heading">
-          <h1>Evaluation</h1>
+          <h1>Run Search-SWE</h1>
           <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/quickstart.md" target="_blank" rel="noreferrer">Full guide <span aria-hidden="true">↗</span></a>
         </div>
         <p class="evaluation-lead">Run Search-SWE from your terminal or through your coding agent. Both use the same evaluation pipeline.</p>
-        <nav class="evaluation-routes" aria-label="Evaluation methods">
+        <nav class="evaluation-routes" aria-label="Run options">
           <a href="#cli">
             <span class="evaluation-route-title">CLI <span aria-hidden="true">↓</span></span>
             <span>Choose your settings in an interactive terminal.</span>
@@ -51,7 +51,7 @@
       <aside class="evaluation-requirements" aria-labelledby="requirements-title">
         <h2 id="requirements-title">Before you start</h2>
         <div>
-          <p>Python 3.12+, a native Linux x86_64 host, Docker and Git. Check the <a href="../tasks/">selected tasks</a> for CPU, memory and GPU requirements; some also need <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#bounded-task-storage" target="_blank" rel="noreferrer">sudo and FUSE</a>.</p>
+          <p>Python 3.12+, Git and native Linux x86_64 with <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#prerequisites" target="_blank" rel="noreferrer">local rootful Docker</a>. Check the <a href="../tasks/">selected tasks</a> for CPU, memory and GPU requirements; some also need <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#bounded-task-storage" target="_blank" rel="noreferrer">sudo and FUSE</a>.</p>
           <p>Enabled OpenRouter submission keys require a fixed <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md" target="_blank" rel="noreferrer">model allowlist</a>: <strong>47 models</strong> for the shared key, <strong>17</strong> for reasoning-query-rewriting. Apply it in OpenRouter before entering the key. Coding-agent and judge keys use separate model access.</p>
           <p>The CLI checks these restrictions before saving settings or running tasks. Checks send short API requests; accepted requests may incur small charges.</p>
         </div>

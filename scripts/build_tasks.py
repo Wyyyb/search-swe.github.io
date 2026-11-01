@@ -150,9 +150,9 @@ def header(prefix: str) -> str:
     </a>
     <nav class="home-nav" aria-label="Main navigation">
       <a href="{prefix or './'}">Overview</a>
-      <a href="{prefix}tasks/" aria-current="{('page' if not prefix else 'true')}">Tasks</a>
+      <a href="{prefix}evaluation/">Run</a>
       <a href="{prefix}leaderboard/">Leaderboard</a>
-      <a href="{prefix}evaluation/">Evaluation</a>
+      <a href="{prefix}tasks/" aria-current="{('page' if not prefix else 'true')}">Tasks</a>
       <a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
   </div>
