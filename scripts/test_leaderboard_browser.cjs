@@ -16,22 +16,22 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     page.on('pageerror', error => errors.push(error.message));
     page.on('request', request => requests.push(request.url()));
     await page.goto(`${origin}/leaderboard/`);
-    assert.equal(await page.locator('tbody tr:visible').count(), 4);
-    assert.deepEqual(await page.locator('.score-value').allTextContents(), ['16.4', '15.5', '4.7', '1.3']);
-    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), Array(4).fill('47 / 47'));
-    assert.deepEqual(await page.locator('tbody .token-cell').allTextContents(), ['1.07B', '2.42B', '528.4M', '4.69B']);
+    assert.equal(await page.locator('tbody tr:visible').count(), 3);
+    assert.deepEqual(await page.locator('.score-value').allTextContents(), ['16.4', '15.5', '4.7']);
+    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), Array(3).fill('47 / 47'));
+    assert.deepEqual(await page.locator('tbody .token-cell').allTextContents(), ['1.07B', '2.42B', '528.4M']);
     assert.equal(await page.locator('tbody .token-cell').first().getAttribute('title'), '1,073,042,462 tokens');
     assert(!requests.some(url => url.includes('/traces/')));
     assert.equal(await page.locator('.model-name').first().innerText(), 'GPT-6 Luna (max)');
     assert.equal(await page.locator('.agent-cell').first().innerText(), 'Codex (v0.164.0)');
     assert(!(await page.locator('tbody').innerText()).includes('OpenRouter'));
-    assert.deepEqual(await page.locator('tbody .release-date').allTextContents(), ['2026-09-22', '2026-10-17', '2026-09-21', '2026-08-26']);
+    assert.deepEqual(await page.locator('tbody .release-date').allTextContents(), ['2026-09-22', '2026-10-17', '2026-09-21']);
     const idFor = name => snapshot.entries.find(entry => entry.name === name).id;
-    const rankedIds = ['GPT-6 Luna', 'DeepSeek V4.1 Flash 1017', 'MiMo-V2.6-Flash', 'GLM 5.3 Flash'].map(idFor);
+    const rankedIds = ['GPT-6 Luna', 'DeepSeek V4.1 Flash 1017', 'MiMo-V2.6-Flash'].map(idFor);
     const sortOrders = {
-      'score-desc': [0, 1, 2, 3], 'score-asc': [3, 2, 1, 0],
-      'date-desc': [1, 0, 2, 3], 'date-asc': [3, 2, 0, 1],
-      'tokens-desc': [3, 1, 0, 2], 'tokens-asc': [2, 0, 1, 3],
+      'score-desc': [0, 1, 2], 'score-asc': [2, 1, 0],
+      'date-desc': [1, 0, 2], 'date-asc': [2, 0, 1],
+      'tokens-desc': [1, 0, 2], 'tokens-asc': [2, 0, 1],
     };
     for (const [sort, order] of Object.entries(sortOrders)) {
       await page.locator('#sort').selectOption(sort);
@@ -55,7 +55,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     await page.locator('[data-sort-key="tokens"]').click();
     assert.equal(await page.locator('#sort').inputValue(), 'tokens-desc');
     await page.getByRole('button', {name: 'GPU', exact: true}).click();
-    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), ['23 / 23', '23 / 23', '23 / 23', '23 / 23']);
+    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), ['23 / 23', '23 / 23', '23 / 23']);
     const gpu = new Set(snapshot.tasks.filter(t => t.hardware === 'gpu').map(t => t.name));
     const luna = snapshot.entries.find(e => e.model === 'openai/gpt-6-luna');
     const gpuTotal = snapshot.trials.filter(t => t.entry === luna.id && gpu.has(t.task)).reduce((sum, t) => sum + t.tokens.total_tokens, 0);
@@ -312,7 +312,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     }
     const noJS = await browser.newPage({javaScriptEnabled: false});
     await noJS.goto(`${origin}/leaderboard/`);
-    assert.equal(await noJS.locator('tbody tr').count(), 4);
+    assert.equal(await noJS.locator('tbody tr').count(), 3);
     await noJS.goto(`${origin}/leaderboard/trials/${many.id}/`);
     assert(await noJS.locator('#panel-verifier').isVisible());
     assert.equal(errors.length, 0, errors.join('\n'));

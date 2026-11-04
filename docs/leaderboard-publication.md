@@ -20,13 +20,48 @@ python scripts/build_leaderboard.py --production
 费用重算只读取本地用量，不调用模型或账户账单接口。普通网站构建直接使用已提交的
 费用补充文件；如果结果或价目表发生变化而费用尚未重算，构建会明确失败。
 
-## 当前准备好的 47 题更新命令
+## GLM 5.3 Flash 下架（已完成）
+
+2026-11-04 从网站移除 `z-ai/glm-5.3-flash`。当前网站为 **47 道题、3 个模型、
+141 份结果**；其他模型的结果、费用和 entry/trial 链接不变。原始 jobs 不修改。
+
+HF 删除及校验已完成，当前固定版本为
+[`824b6d863b69b1f86b9d73b365dca28af200de7c`](https://huggingface.co/datasets/search-swe/trajectories/commit/824b6d863b69b1f86b9d73b365dca28af200de7c)。
+`storage.json` 已切换到该版本并移除 pending 标记。146 个 HTML 页面及结果 JSON
+均使用这个固定版本；网站仓库的部署仍需单独提交和推送。
+
+以下命令保留用于离线审计或中断后的重试，正常情况下无需再次执行删除：
+
+```bash
+python scripts/prune_hf_models.py          # 离线核对并列出删除范围
+python scripts/prune_hf_models.py --apply  # 执行 HF 删除、校验并更新本地官网
+```
+
+已使用 `.build/hf-trajectories-without-glm/` 和
+`.build/hf-model-removal-2026-11-04.json` 完成 `search-swe/trajectories` 的更新，
+删除了 GLM 的 **47 个 trial 目录、15,183 个文件，约 539.06 MiB**。
+同一提交中更新了 `README.md`、release 的 `snapshot.json` 和 `publication.json.gz`；
+其余 141 份轨迹逐字节保留，不重复上传。
+
+脚本复用 `hf auth login` 或 `HF_TOKEN`。提交以
+`4ad9ff8ac4c70eefa3d5f6781df3692d81adfc7b` 为父提交；远端发生其他变化时会拒绝
+自动删除。中断后重跑 `--apply`：若同一提交已经成功，则验证结果并继续接入网站。
+校验包括保留文件哈希、删除目录缺失、匿名下载和 CORS。
+
+执行回执为 `.build/hf-model-removal-2026-11-04.applied.json` 和
+`.build/hf-trajectories-without-glm-uploaded.json`。
+本地备份、删除计划、公开包和回执保存在 `.build/`，不会随官网发布。
+脚本不会 add、commit 或 push 网站仓库，也不会删除本机原始评测记录。
+
+HF 删除作用于当前版本，历史提交保留旧文件，不重写仓库历史。
+
+## 历史记录：2026-10-31 两题撤销（已执行）
 
 2026-10-31 撤销 `deletion-resilient-vector-search` 和
-`resource-bounded-multivector-search`。当前为 47 题（24 CPU、23 GPU）、4 个模型、
+`resource-bounded-multivector-search`。当时更新为 47 题（24 CPU、23 GPU）、4 个模型、
 188 份结果。两题不按零分计入，榜单、tokens 和时长均按剩余结果重新汇总。
 
-在网站仓库根目录运行：
+以下为当时使用的命令，不用于本次模型下架：
 
 ```bash
 python scripts/prune_hf_tasks.py          # 离线核对并列出删除范围
@@ -62,21 +97,20 @@ python scripts/build_leaderboard.py --production --check
 
 ## 完整发布包的上传命令
 
-以下用于后续新增评测的完整发布；本次两题撤销使用上面的 `prune_hf_tasks.py`。
-在网站仓库根目录运行：
+以下用于后续新增评测的完整发布。先按下一节准备与本地结果匹配的新包，再运行：
 
 ```bash
 python -m pip install -r scripts/requirements-hf.txt
 hf auth login
-python scripts/upload_hf_release.py
-python scripts/upload_hf_release.py --upload
+python scripts/upload_hf_release.py --package .build/hf-trajectories-next
+python scripts/upload_hf_release.py --package .build/hf-trajectories-next --upload
 ```
 
 已经登录过 HF 时可省略 `hf auth login`。也支持通过环境变量 `HF_TOKEN` 提供
 对目标 dataset 的写权限；不要把 token 写进脚本或网页。
 
-不加 `--upload` 时只做离线检查，既不上传也不访问 HF。默认读取已经生成的
-`.build/hf-trajectories/`。文件较多，上传使用可恢复的 `upload_large_folder`；
+不加 `--upload` 时只做离线检查，既不上传也不访问 HF。用 `--package` 指定
+本次准备的包，避免误用早期的 `.build/hf-trajectories/`。文件较多，上传使用可恢复的 `upload_large_folder`；
 中断后对同一份未修改的发布包重跑相同命令即可。默认 4 个 worker，可用
 `--workers 2` 调低并发。脚本保留既有 release，不删除远端文件。
 
@@ -98,14 +132,16 @@ python scripts/build_leaderboard.py --production --check
 无需再次上传：
 
 ```bash
-python scripts/upload_hf_release.py --verify-revision FULL_40_CHARACTER_COMMIT_SHA
+python scripts/upload_hf_release.py --package .build/hf-trajectories-next --verify-revision FULL_40_CHARACTER_COMMIT_SHA
 ```
 
 ## 重建公开发布包
 
-这次已准备好，无需在上传前重跑。以后评测数据更新时，指定一个新的空目录：
+当前下架更新已完成。以后评测数据更新时，先更新网站结果和费用，再指定一个新的空目录：
 
 ```bash
+python scripts/import_results.py --jobs /path/to/Search-SWE/jobs
+python scripts/leaderboard_costs.py --usage /path/to/Search-SWE/jobs/traj-analysis/leaderboard-data/usage.json
 python scripts/prepare_hf_release.py \
   --jobs /path/to/Search-SWE/jobs \
   --output .build/hf-trajectories-next
@@ -113,8 +149,8 @@ python scripts/prepare_hf_release.py --check --output .build/hf-trajectories-nex
 python scripts/upload_hf_release.py --package .build/hf-trajectories-next --upload
 ```
 
-导出只使用 `final-trajectories/INDEX.csv` 的最终选择，并核对分析、轨迹和最终
-reward 的源哈希。不会写入原始 jobs、重新解题或重新评分。
+导出只使用 `final-trajectories/INDEX.csv` 的最终选择，并应用网站的 `selection.json`
+模型排除规则，核对分析、轨迹和最终 reward 的源哈希。不会写入原始 jobs、重新解题或重新评分。
 
 发布包结构：
 
@@ -135,8 +171,9 @@ releases/<date-selection-hash>/
 ```
 
 压缩清单和轨迹下载使用仓库已有的 `*.gz` LFS 规则。普通阅读分片仍是可直接
-`response.json()` 的 JSON。结果选择变化会生成新的 snapshot/entry URL；未变化的
-trial 保持原 URL。撤销任务时同步清理旧生成页面和包含撤销结果的公开 snapshot。
+`response.json()` 的 JSON。源评测变化会生成新的 snapshot/entry URL；仅调整网站模型
+选择时，snapshot URL 更新，保留模型的 entry/trial URL 不变。下架任务或模型时，
+同步清理旧生成页面和包含已下架结果的公开 snapshot。
 
 ## 路径与公开数据边界
 
@@ -162,7 +199,7 @@ trial 保持原 URL。撤销任务时同步清理旧生成页面和包含撤销�
 ```bash
 PYTHONPATH=scripts python -m unittest \
   scripts/test_publication.py scripts/test_leaderboard.py scripts/test_trial_files.py
-NODE_PATH=/path/to/playwright/node_modules node scripts/test_hf_browser.cjs
+HF_PACKAGE=.build/hf-trajectories-without-glm NODE_PATH=/path/to/playwright/node_modules node scripts/test_hf_browser.cjs
 ```
 
 浏览器检查使用另一个真实 HTTP origin 提供公开发布包，验证匿名跨域加载、

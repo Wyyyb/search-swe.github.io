@@ -27,12 +27,6 @@
       "source": "https://mimo.mi.com/docs/en-US/price/pay-as-you-go",
       "rates": {"input": "0.14", "cached_input": "0.0028", "cache_write_input": "0.14", "output": "0.28"},
       "note": "Overseas real-time API prices in USD. Cache writes have no additional charge; their input processing is charged at the cache-miss rate."
-    },
-    "z-ai/glm-5.3-flash": {
-      "official_model": "GLM-5.3-Flash",
-      "source": "https://docs.z.ai/guides/overview/pricing",
-      "rates": {"input": "0.15", "cached_input": "0.03", "cache_write_input": "0.15", "output": "0.50"},
-      "note": "Standard API prices in USD. Cache storage is free in this pricing snapshot; cache creation inputs use the ordinary input rate."
     }
   }
 }

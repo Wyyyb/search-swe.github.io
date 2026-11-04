@@ -1,18 +1,22 @@
 # Leaderboard data and publication
 
-The homepage now links to `/leaderboard/`, with static model entries and 188
+The homepage now links to `/leaderboard/`, with static model entries and 141
 trial pages. Local previews read exported trajectories. Production pages read the same public
 files from an immutable Hugging Face commit. Neither mode calls inference APIs or
 modifies evaluation jobs. See [the publication guide](../../docs/leaderboard-publication.md)
 for the prepared upload script, path normalization and production checks.
 
-The current selection has 47 tasks (24 CPU, 23 GPU) and four models. The
-2026-10-31 withdrawal removes two tasks and their eight trials from scores,
-token totals, task pages and trial routes. `scripts/prune_hf_tasks.py` checks the
-prepared HF update offline; `--apply` deletes only those trial directories and
-updates the dataset metadata in one guarded commit. It then verifies the result
-and pins the local site to the new HF revision. Before execution, the local site
-previews the prepared public package. See the publication guide for the command.
+The current selection has 47 tasks (24 CPU, 23 GPU) and three models.
+The 2026-11-04 withdrawal removes GLM 5.3 Flash and its 47 trials from the
+leaderboard, chart, downloads, public snapshots and generated routes.
+`selection.json` records this explicit exclusion so subsequent imports do not
+restore it. Source benchmark jobs remain unchanged. The importer and cost tool
+still require complete matching coverage for every retained model.
+The HF withdrawal is complete. `storage.json` pins verified commit
+`824b6d863b69b1f86b9d73b365dca28af200de7c`; the pending marker is cleared.
+The current public package is `.build/hf-trajectories-without-glm/`.
+`scripts/prune_hf_models.py` retains the offline audit and idempotent retry
+commands. See the publication guide for the completed deletion and receipts.
 
 From the homepage repository root:
 
@@ -31,11 +35,13 @@ are real directories and refresh without a routing fallback.
 `release.json` is the current compact snapshot. `releases/<id>.json` stores
 imported snapshots; withdrawn selections must also be removed from these public
 JSON files. The release ID includes a hash of the selected index
-and analysis results. HTML is generated into `leaderboard/`; obsolete generated
+and analysis results (plus the website selection policy when present).
+Retained model entry and trial URLs survive a model withdrawal.
+HTML is generated into `leaderboard/`; obsolete generated
 entry, snapshot and trial pages are removed when the selection changes.
 Large exports in `data/leaderboard/traces/` are ignored by Git; a fresh checkout
 needs the importer to read trajectories. The importer leaves original records
-and older exports untouched. Public packages are prepared separately in `.build/hf-trajectories/`; source
+and older exports untouched. Public packages are prepared separately under `.build/`; source
 exports and public packages are both excluded from Git.
 
 ## Typography and result tables
@@ -60,7 +66,8 @@ Narrow screens scroll the table horizontally instead of shrinking its text.
   waiting, excluding setup and independent verification.
 - Total tokens in the main leaderboard sum input (including cache) + output
   across the selected All / CPU / GPU task set, not a per-task average. Entry rows
-  and trial summaries show Input Tokens, Output Tokens and Cached Tokens separately.
+  show Input Tokens, Output Tokens and Cached Tokens; trial summaries show the
+  cached subset below Input Tokens.
   Additional reasoning counters appear in Agent. Reasoning is not added a second
   time. Verifier/task-internal API usage is excluded. Regrading uses original
   coding usage once. Missing values remain missing.
@@ -164,8 +171,8 @@ text exports can be downloaded as gzip. File bodies are inserted as text.
 
 Agent/artifact/config/lock/log/exception sources are the Harbor directory
 accompanying the selected trajectory. Verifier sources **always** follow the
-`FINAL_RESULT.json` final reward pointer: in 33 current trials the final grading
-files are in a separate reevaluation directory. Old neighboring verifier rewards
+`FINAL_RESULT.json` final reward pointer. When a trial was regraded separately,
+the final grading files are in a separate reevaluation directory. Old neighboring verifier rewards
 must not replace these final results. Config/Lock can describe the retained
 Harbor run rather than a subsequent separate scoring pass; the Verifier note
 identifies separately regraded trials. Exceptions do not imply invalid scores.

@@ -6,6 +6,7 @@ job-directory serving. Large local exports are intentionally gitignored.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import gzip
 import hashlib
@@ -51,6 +52,32 @@ def write(path, data, check=False):
         raise ValueError(f"Export needs rebuilding: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
+
+
+def selection_policy():
+    path = ROOT / 'content/leaderboard/selection.json'
+    return read(path) if path.exists() else None
+
+
+def apply_selection(snapshot, policy):
+    """Keep an explicit website selection without modifying benchmark source records."""
+    if not policy:
+        return snapshot
+    if (policy.get('schema') != 1 or not isinstance(policy.get('excluded_models'), list) or
+            not policy['excluded_models'] or any(not isinstance(m, str) or not m for m in policy['excluded_models'])):
+        raise ValueError('Invalid website model selection policy')
+    date.fromisoformat(policy['updated_at'])
+    selected = copy.deepcopy(snapshot)
+    excluded = set(policy['excluded_models'])
+    selected['entries'] = [e for e in selected['entries'] if e['model'] not in excluded]
+    ids = {e['id'] for e in selected['entries']}
+    selected['trials'] = [t for t in selected['trials'] if t['entry'] in ids]
+    if not ids or not selected['trials']:
+        raise ValueError('Website selection cannot remove all results')
+    selected['selection'] = copy.deepcopy(policy)
+    fingerprint = digest(encode({'source_hashes': selected['source_hashes'], 'selection': policy}))[:10]
+    selected['id'] = policy['updated_at'] + '-selected-' + fingerprint
+    return selected
 
 
 def scrub(text):
@@ -203,6 +230,10 @@ def import_snapshot(jobs, check=False, public_output=None):
     expected = {(task, m['model']) for task in tasks for m in results['models'].values()}
     if set(runs) != expected or set(selected) != expected:
         raise ValueError('Analysis and final selections must cover the same fixed task/model set')
+    policy = selection_policy()
+    excluded = set(policy['excluded_models']) if policy else set()
+    selected = {key: row for key, row in selected.items() if key[1] not in excluded}
+    rows = list(selected.values())
     catalog = {t['name']: t for t in read(ROOT / 'content/tasks/catalog.json')}
     fingerprint = digest((final / 'INDEX.csv').read_bytes() + results_path.read_bytes())[:10]
     release_id = results['observed_at'][:10] + '-local-' + fingerprint
@@ -271,6 +302,8 @@ def import_snapshot(jobs, check=False, public_output=None):
         if public_output:
             print(f'Prepared {len(snapshot["trials"]):3}/{len(rows)}: {trial_id}', flush=True)
     snapshot['entries'] = sorted(entries.values(), key=lambda e: e['id'])
+    snapshot = apply_selection(snapshot, policy)
+    release_id = snapshot['id']
     if public_output:
         snapshot['publication'] = {'schema': 1, 'path_aliases': {
             'BENCHMARK_ROOT': 'Benchmark checkout', 'EVAL_ROOT': 'Evaluation workspace',

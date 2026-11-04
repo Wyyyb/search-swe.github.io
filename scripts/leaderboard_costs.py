@@ -49,7 +49,10 @@ def request_cost(usage, model):
 def calculate(snapshot, usage, prices):
     """Join by selected task/model/effort and verify provenance and all totals."""
     rows = {}
+    excluded = set(snapshot.get('selection', {}).get('excluded_models', []))
     for row in usage['rows']:
+        if row['model'] in excluded:
+            continue
         key = (row['task'], row['model'], row['effort'])
         if key in rows:
             raise ValueError(f'Duplicate usage selection: {key}')

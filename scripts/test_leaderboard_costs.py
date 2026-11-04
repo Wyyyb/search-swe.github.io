@@ -43,7 +43,7 @@ class CostTests(unittest.TestCase):
     def test_standard_vendor_rates(self):
         usage = tokens(1000000, 800000, 0, 100000)
         expected = {'deepseek/deepseek-v4.1-flash-1017': '0.0924',
-                    'xiaomi/mimo-v2.6-flash': '0.05824', 'z-ai/glm-5.3-flash': '0.104'}
+                    'xiaomi/mimo-v2.6-flash': '0.05824'}
         for model, value in expected.items():
             self.assertEqual(costs.request_cost(usage, self.prices['models'][model]), Decimal(value))
 
@@ -62,6 +62,17 @@ class CostTests(unittest.TestCase):
         self.assertEqual(Decimal(result['trial']['cost_usd']), Decimal('0.0016213'))
         self.assertEqual(result['trial']['response_count'], 1)
         usage['rows'][0]['requests'][1] = {'response_id': 'one', 'usage': tokens(output=300)}
+        with self.assertRaises(ValueError):
+            costs.calculate(snapshot, usage, self.prices)
+
+    def test_only_explicitly_withdrawn_models_are_excluded_from_usage(self):
+        snapshot, usage = self.fixture()
+        snapshot['selection'] = {'excluded_models': ['z-ai/glm-5.3-flash']}
+        withdrawn = copy.deepcopy(usage['rows'][0])
+        withdrawn['model'] = 'z-ai/glm-5.3-flash'
+        usage['rows'].append(withdrawn)
+        self.assertEqual(set(costs.calculate(snapshot, usage, self.prices)), {'trial'})
+        usage['rows'][-1]['model'] = 'unexpected-model'
         with self.assertRaises(ValueError):
             costs.calculate(snapshot, usage, self.prices)
 

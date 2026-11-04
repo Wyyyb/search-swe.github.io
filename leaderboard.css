@@ -81,7 +81,7 @@ th[aria-sort=ascending] .sort-indicator, th[aria-sort=descending] .sort-indicato
 .pareto-tooltip { position: absolute; z-index: 1; pointer-events: none; background: #fff; border: 1px solid var(--home-line); border-radius: 6px; padding: 10px 13px; box-shadow: 0 4px 16px #182d4514; font-size: 13px; max-width: calc(100% - 16px); }
 .pareto-tooltip strong, .pareto-tooltip span { display: block; }
 .pareto-tooltip strong { font-weight: 550; margin-bottom: 4px; }.pareto-tooltip span { color: var(--home-muted); font-variant-numeric: tabular-nums; }
-.pareto-legend { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 22px; padding-top: 18px; margin-top: 12px; border-top: 1px solid var(--home-line); }
+.pareto-legend { display: grid; grid-template-columns: repeat(var(--pareto-columns, 4), minmax(0, 1fr)); gap: 14px 22px; padding-top: 18px; margin-top: 12px; border-top: 1px solid var(--home-line); }
 .pareto-legend-item { display: grid; grid-template-columns: 8px 1fr; align-content: start; align-items: baseline; gap: 3px 9px; color: #394352; font-size: 14px; }
 .pareto-legend-dot { width: 8px; height: 8px; border-radius: 50%; }.pareto-legend-summary { grid-column: 2; font-size: 13px; color: var(--home-muted); font-variant-numeric: tabular-nums; }
 @media(max-width:1000px) { .pareto-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

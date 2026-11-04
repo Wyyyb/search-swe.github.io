@@ -26,6 +26,7 @@
     document.getElementById('pareto-empty').hidden = visible.length > 0;
     chart.hidden = visible.length === 0;
     if (!visible.length) return;
+    legend.style.setProperty('--pareto-columns', Math.min(4, visible.length));
 
     // Search hides models, but does not turn a dominated model into a frontier point.
     const frontierIds = new Set(frontier(eligible).map(e => e.id));

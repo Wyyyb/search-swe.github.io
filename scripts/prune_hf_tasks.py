@@ -189,7 +189,7 @@ def apply(plan, package, manifest, source_hash, plan_path, site_origin):
         operations += [CommitOperationAdd(path_in_repo=p, path_or_fileobj=package / p) for p in plan['update_files']]
         commit = api.create_commit(REPO_ID, repo_type='dataset', revision='main',
             parent_commit=plan['base_revision'], operations=operations,
-            commit_message=f'Withdraw two tasks; publish {manifest["tasks"]} tasks and {manifest["trials"]} trials')
+            commit_message=plan.get('commit_message') or f'Withdraw two tasks; publish {manifest["tasks"]} tasks and {manifest["trials"]} trials')
         revision = commit.oid
         write(plan_path.with_suffix('.applied.json'), {'revision': revision, 'publication_sha256': plan['publication_sha256']})
         print(f'HF update committed: {revision}. Verifying before activating the website…', flush=True)
