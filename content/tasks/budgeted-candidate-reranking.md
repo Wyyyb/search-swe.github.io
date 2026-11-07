@@ -1,10 +1,10 @@
 # Budgeted Candidate Reranking
 
-Allocate a small local-model token budget to rerank a fixed pool of 100 BM25 passages.
+Rerank 100 fixed BM25 candidates using a frozen local model and **2,048 weighted tokens per query**, on one GPU capped at **24 GiB**. Spend tokens where they improve the top ten: output tokens cost four times input tokens, and neither candidate expansion nor fine-tuning is allowed. Reward measures nDCG@10 improvement from the frozen baseline toward the best possible ranking of those candidates.
 
 * **Task name**: `search-swe/budgeted-candidate-reranking`
 * **Domain**: `metered reranking`
-* **Primary focus**: `Budgeted Candidate Reranking`
+* **Primary focus**: `Token allocation within a fixed candidate pool`
 * **Primary metric**: `nDCG@10 improvement normalized by fixed-candidate headroom`
 * **Tags**: `metered reranking`, `search-swe`
 
@@ -13,7 +13,7 @@ Allocate a small local-model token budget to rerank a fixed pool of 100 BM25 pas
 * **Agent budget**: `2 hours`
 * **Compute**: `16` CPUs, `32 GiB` RAM, `40 GiB` storage; `1` GPU(s)
 
-Frozen Qwen3-1.7B, offline. One A100 40 GB with 24 GiB total device-memory cap. Each query has 2,048 weighted tokens: input tokens plus four times output tokens. Reserve maximum output before calls. Strategy work has one cumulative second; trusted response waits have 90 seconds. No fine-tuning, extra models or candidate expansion.
+Frozen Qwen3-1.7B, offline. One GPU with a 24 GiB total device-memory cap. Each query has 2,048 weighted tokens: input tokens plus four times output tokens. Reserve maximum output before calls. Across five measurements, median local-strategy time must be at most one second and median trusted-response time at most 90 seconds; individual execution caps are two and 120 seconds, respectively. No fine-tuning, extra models or candidate expansion.
 
 ## Public input and output contract
 
@@ -23,17 +23,19 @@ Frozen Qwen3-1.7B, offline. One A100 40 GB with 24 GiB total device-memory cap. 
 
 ### Outputs
 
-Submit `/app/submission/run.sh`, `deployment.json` and dependencies. Deployment permits only `attention` (`sdpa` or `eager`) and `cpu_threads` (1–16). Trusted loading/warmup takes at most 600/60 seconds. Each query launches a fresh unprivileged CPU-only strategy with writable `/work`.
+Submit `/app/submission/run.sh`, `deployment.json` and dependencies. Deployment permits only `attention` (`sdpa` or `eager`) and `cpu_threads` (1–16). Trusted loading/warmup takes at most 600/60 seconds.
 
 The runner receives a stdin `type: query` object with query, candidates and budgets. Send `type: count` to preview token cost or `type: generate` with `messages`, `max_new_tokens` and optional `logprob_tokens`/`candidate_ids`; read responses from stdin. Finish with `{"type":"result","ids":["candidate-id"]}` containing at most ten distinct current-pool IDs. Flush JSONL; the trusted process owns model inference and accounting.
 
 ## Evaluation
 
+Deployment and fixed warmup run once. Each query is measured five times, each with a fresh unprivileged CPU-only strategy, cleared writable `/work` and its own 2,048-token allowance. All five rankings must be valid and within budget; passing queries use the mean of their five nDCG@10 values.
+
 Q is mean linear-gain nDCG@10 with complete official-qrels IDCG. Reward is `clip((Q-B)/(U-B),0,1)`, using the frozen strongest simple baseline `B=0.49536006501146507` and fixed-candidate oracle `U=0.8707005096559685`. No-positive-candidate queries stay in all denominators. Budget, protocol, query or inference failures give that query zero; deployment, aggregate-resource or integrity violations zero the task. The relevance metric is deterministic; the separate integrity audit still gates reward.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/budgeted-candidate-reranking/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/budgeted-candidate-reranking/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/budgeted-candidate-reranking/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/budgeted-candidate-reranking/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/budgeted-candidate-reranking/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/budgeted-candidate-reranking/task.toml)
 for the complete contract at the synchronized benchmark revision.

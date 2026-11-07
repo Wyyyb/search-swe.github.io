@@ -5,6 +5,14 @@ Each task has a static page at `tasks/<task-name>/index.html`, generated from
 static files. Task names match the benchmark repository and its
 Hugging Face dataset paths.
 
+The 47 task settings were synchronized on 2026-11-08 against benchmark commit
+[`ed7544f`](https://github.com/VectorSpaceLab/Search-SWE/commit/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda).
+Instruction, task-documentation and runtime links in the settings pin that revision.
+Check the invoked verifier and scoring constants as well as instructions when
+updating timing repetitions, judge aggregation, reference values and failure rules.
+Published leaderboard results remain tied to their recorded evaluation snapshots;
+updating task descriptions does not regrade historical runs or replace HF traces.
+
 ## Add or edit a task
 
 1. Choose the same descriptive name as the benchmark package: at most five
@@ -29,6 +37,14 @@ button for use with `--task`. Clipboard support lives in `task-pages.js`, with
 an HTTP-preview fallback and manual selection when copying is unavailable. Detail
 headers also link to the task directory on the benchmark’s GitHub `main` branch;
 version-pinned instruction and configuration links remain in the task setting.
+
+Write the opening as a compact reader summary: what to build, the dominant
+resource or method constraints, and what earns credit. Use two or three short
+sentences where practical; name the concrete trade-off instead of calling a task
+"challenging". The catalog preview should carry the goal and a defining constraint.
+Keep exact budgets, interfaces and scoring formulas in the body. Distinguish
+quality gates from rewarded speed, and zero-reward baselines from positive-score
+reference anchors. Keep the primary focus specific rather than repeating the title.
 
 Cards share one visual style, with topic tags describing each task's focus.
 Status is editorial metadata: use `setting` for available settings,

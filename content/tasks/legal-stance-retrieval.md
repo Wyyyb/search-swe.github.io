@@ -1,6 +1,6 @@
 # Legal Stance Retrieval
 
-Retrieve court documents that support or refute a claim according to the stance requested by the query.
+Rank court documents supporting or refuting a requested claim, processing **311 queries in 20 seconds on one GPU**. Match the requested stance rather than topic alone. The median of all five fresh rounds, with failures ordered last, supplies the rankings; only nDCG@10 above the frozen baseline earns reward.
 
 * **Task name**: `search-swe/legal-stance-retrieval`
 * **Domain**: `legal document retrieval`
@@ -53,8 +53,7 @@ position determines rank. Produce one result for every query.
 
 ## Evaluation
 
-Compute binary document-level NDCG@10 for each question, then take their mean
-`Q`. Normalize only after averaging, using the exact reference:
+Run five rounds in the same query order, rebuilding from an empty index and restarting services each time. Select the median-time batch, ordering failed, late or invalid batches last and breaking ties by round order. Compute binary document-level NDCG@10 for each question in that batch, then take their mean `Q`. Normalize only after averaging, using the exact reference:
 
 ~~~text
 B = 0.5610484855098774
@@ -64,9 +63,8 @@ reward = clamp((Q - B) / (1 - B), 0, 1)
 The reference must not be rounded. Relevance uses the supplied stance judgments;
 the pooled labels are not an exhaustive account of all potentially useful documents.
 
-Failed execution, invalid output, batch timeout or a failed mandatory trajectory
-compliance audit yields zero overall. There is no partial batch credit.
+Any failed build, fewer than three successful batches, or a failed mandatory trajectory compliance audit yields zero overall. No partial batch receives credit. Each build retains its 3,600-second limit, each batch 20 seconds, and the overall verifier allows 20,100 seconds. The single audit must have complete, consistent decisions; missing or inconsistent audit output invalidates the measurement.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/legal-stance-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/legal-stance-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/legal-stance-retrieval/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/legal-stance-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/legal-stance-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/legal-stance-retrieval/task.toml).

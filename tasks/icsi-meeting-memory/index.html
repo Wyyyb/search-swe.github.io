@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Compress meeting history into a small readable memory, then retrieve notes and answer questions from those notes alone." />
+  <meta name="description" content="Compress 67 meetings into 183,981 bytes of readable memory (5% of dialogue text) and answer from at most ten retrieved notes, without a local model or GPU." />
   <meta name="theme-color" content="#ffffff" />
   <title>ICSI Meeting Memory — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,8 +38,8 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>CPU</span><div class="task-name-control"><code>icsi-meeting-memory</code><button type="button" class="copy-task-name" data-task-name="icsi-meeting-memory" aria-label="Copy task name: icsi-meeting-memory" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/icsi-meeting-memory" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>ICSI Meeting Memory</h1>
-        <div class="task-summary"><p>Compress meeting history into a small readable memory, then retrieve notes and answer questions from those notes alone.</p></div>
-        <dl class="task-specs"><div><dt>Domain</dt><dd><code>compact meeting memory</code></dd></div><div><dt>Primary focus</dt><dd><code>ICSI Meeting Memory</code></dd></div><div><dt>Primary metric</dt><dd><code>EvidenceGroundedAnswerAccuracy</code></dd></div></dl>
+        <div class="task-summary"><p>Compress 67 meetings into <strong>183,981 bytes of readable memory (5% of dialogue text)</strong> and answer from at most <strong>ten retrieved notes</strong>, without a local model or GPU. The transcripts disappear after preparation, and the answerer gets at most two generation calls. Credit requires both preserved evidence and a correct answer; the reference quality maps to 20/100. Topic matching alone is insufficient.</p></div>
+        <dl class="task-specs"><div><dt>Domain</dt><dd><code>compact meeting memory</code></dd></div><div><dt>Primary focus</dt><dd><code>Evidence preservation under memory compression</code></dd></div><div><dt>Primary metric</dt><dd><code>Joint evidence-and-answer accuracy</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>compact meeting memory</span><span>search-swe</span></div>
       </header>
       <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#host-configuration" class="toc-subsection">Host configuration</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
@@ -47,8 +47,7 @@
 <ul><li><strong>Agent budget</strong>: <code>2 hours</code></li><li><strong>Compute</strong>: <code>8</code> CPUs, <code>8 GiB</code> RAM, <code>8 GiB</code> storage; <code>0</code> GPU(s)</li></ul>
 <p>No local model or GPU. Build: 300 seconds; all searches together: 150 seconds; all answers together: 1,800 seconds. Jina is allowed for preparation/search, while permitted generation is restricted to answering. Evaluation uses restricted API transports, not provider credentials in submitted processes.</p>
 <h3 id="host-configuration">Host configuration</h3>
-<p><code>OPENROUTER_API_KEY</code> is required at startup for the verifier&#x27;s answerer gateway, even when retrieval runs locally. Apply the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md">shared 47-model profile</a>; the gateway further restricts generation to the four models in the task&#x27;s resource policy. <code>JINA_API_KEY</code> is optional for embedding and reranking.</p>
-<p>Evidence and answer grading use <code>ANSWER_JUDGE_MODEL_NAME</code> at the fixed OpenRouter endpoint. The separate <code>VERIFIER_OPENAI_API_KEY</code> must allow that model and the <code>deepseek/deepseek-v4.1-flash</code> trajectory judge.</p>
+<p>The answerer gateway requires <code>OPENROUTER_API_KEY</code> with the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md">shared 47-model profile</a>, further restricted to four generation models by this task. <code>JINA_API_KEY</code> is optional. Evidence/answer grading uses separate <code>ANSWER_JUDGE_MODEL_NAME</code>, <code>ANSWER_JUDGE_BASE_URL</code> and <code>ANSWER_JUDGE_API_KEY</code>; trajectory auditing uses <code>VERIFIER_OPENAI_API_KEY</code> and <code>VERIFIER_OPENAI_BASE_URL</code>. Endpoints must satisfy the verifier network policy.</p>
 <h2 id="public-input-and-output-contract">Public input and output contract</h2>
 <h3 id="inputs">Inputs</h3>
 <p><code>/task/data/history.jsonl</code> covers 67 meetings. Five public questions, reference answers and evidence are under <code>/task/data/validation/</code>; 143 evaluation questions are withheld.</p>
@@ -60,16 +59,16 @@
 <p>Search returns at most ten strings from the indexed memory. Answer returns nonempty plain text of at most 2,000 characters, using at most two generation calls with at most 2,000 output tokens each. Build, search and answer have separate read boundaries: original transcripts do not transfer, search sees only the index, and answer sees only the current question and recalled notes.</p>
 <h2 id="evaluation">Evaluation</h2>
 <p>For each question, credit requires both an evidence hit and a correct answer. A hit means that the retrieved notes faithfully preserve at least one relevant reference fact, including valid summaries or paraphrases. Topic overlap alone does not count. The answer judge checks the reference answer and required facts. Evidence is judged without the answer, and the answer is judged without the retrieved notes.</p>
-<p>EvidenceGroundedAnswerAccuracy is the mean of these joint binary outcomes over 143 held-out questions. Evidence and answer accuracy are also reported separately. Semantic grading remains subject to model variability.</p>
+<p>Evidence extraction and answer generation run once. The fixed evidence and answer are each judged three times; a round earns one only when both judgments pass. Average the three joint decisions per question, then all 143 held-out questions equally. Transport retries do not add samples or regenerate the answer. Evidence and answer accuracy are also reported separately. Semantic grading remains subject to model variability.</p>
 <h3 id="reward-mapping">Reward mapping</h3>
-<p>The final reward uses the raw quality described above, with fixed reference quality <code>b = 0.06293706293706294</code> and integer score anchor <code>a = 20</code> on the 0–100 scale:</p>
-<pre><code class="language-text">reward(q) = (a / 100) * q / b                             if 0 &lt;= q &lt;= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b &lt; q &lt;= 1</code></pre>
-<p>This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward precision; a displayed 0–100 score is rounded to one decimal place. Correctness and trajectory-audit gates take precedence over this conversion.</p>
+<p>For raw quality <code>Q</code>, use <code>b=0.06293706293706294</code> and <code>a=0.2</code>:</p>
+<pre><code class="language-text">reward = a * Q / b                         if Q &lt;= b
+         a + (1-a) * (Q-b) / (1-b)         if Q &gt; b</code></pre>
+<p>This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.</p>
 <h3 id="validity-and-failure-handling">Validity and failure handling</h3>
 <p>The four files, executable permissions, JSON syntax and size, index build, script completion and output formats must satisfy the contract. A failed submitted process or invalid output invalidates the submission. Empty retrieval is an evidence miss. A malformed judge response or model-service failure invalidates the measurement rather than establishing model quality.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/icsi-meeting-memory/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/icsi-meeting-memory/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/icsi-meeting-memory/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/icsi-meeting-memory/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../financial-report-qa/"><span>Previous task</span><strong>Financial-Report Evidence Retrieval</strong></a><a href="../incremental-vector-search/"><span>Next task</span><strong>Incremental Vector Search</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

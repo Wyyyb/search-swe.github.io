@@ -92,7 +92,13 @@ summary, so omitted secondary limits remain traceable.
 
 Create or update `content/tasks/<name>.md` with:
 
-- A level-one title identical to the catalog `title` and a short objective.
+- A level-one title identical to the catalog `title` and a compact opening that
+  connects the objective, dominant resource/method constraints and scoring target.
+  Explain a concrete trade-off where supported by the contract. Keep the catalog
+  summary equally specific about the goal and a defining constraint. Avoid title
+  repetition in `Primary focus`; distinguish quality gates, rewarded metrics and
+  positive-score reference anchors. Preserve exact formulas and secondary limits
+  in the body without repeating generic explanations.
 - Metadata lines matching existing settings: `Task name` in the form
   `search-swe/<name>`, `Domain`, `Primary focus`, `Primary metric`, and `Tags`.
 - Runtime and requirements, public input/output contract, and evaluation sections.
@@ -102,6 +108,8 @@ Create or update `content/tasks/<name>.md` with:
 Use the site's supported Markdown subset: level-two/three headings, paragraphs,
 flat lists, inline code, bold, links, and fenced code. Avoid Markdown tables,
 nested lists, raw HTML, or unrendered math in task settings.
+Use fenced blocks for format-sensitive input examples: paragraph and inline-code
+rendering collapses line breaks, which can silently change a fixed model prompt.
 
 Update `content/tasks/catalog.json` with `name`, `title`, `summary`, `tag`, `hardware`, and
 `status`; `navTitle`, `homepageSummary`, and `featured` are optional. Use the

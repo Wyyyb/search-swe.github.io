@@ -1,6 +1,6 @@
 # Decision Model Training
 
-Train a compact local model to make structured categorical, Boolean and ordinal decisions on previously unseen task schemas.
+Train a compact Qwen3-0.6B decision model **offline in six hours on one GPU**, then process **4,200 requests in 240 seconds**. Generalize from supplied examples to unseen task schemas while producing exact categorical, Boolean and ordinal answers. Reward is mean exact decision accuracy; initialization has a separate 120-second allowance.
 
 * **Task name**: `search-swe/decision-model-training`
 * **Domain**: `structured decision prediction`
@@ -11,7 +11,7 @@ Train a compact local model to make structured categorical, Boolean and ordinal 
 ## Runtime and requirements
 
 * **Agent budget**: `6 hours`
-* **Compute**: `16` CPUs, `32 GiB` RAM, `100 GiB` storage; one A100 40 GB GPU
+* **Compute**: `16` CPUs, `32 GiB` RAM, `100 GiB` storage; one GPU
 * **Network**: disabled; no external APIs
 * **Initialization limit**: `120 seconds`
 * **Inference limit**: `240 seconds` for the complete evaluation batch
@@ -61,6 +61,6 @@ no baseline subtraction or model judge.
 Missing or invalid answers, failed commands, timeouts and integrity violations
 set the reward to zero.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/decision-model-training/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/decision-model-training/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/decision-model-training/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/decision-model-training/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/decision-model-training/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/decision-model-training/task.toml).

@@ -1,6 +1,6 @@
 # Agentic Search
 
-Optimize a supplied ReAct retrieval starter over the BrowseComp-Plus corpus. Given a multi-constraint question, return exactly five distinct documents that best address its combined information need.
+Find five documents answering a multi-constraint question over 100,195 documents, with at most **20 search actions** on a CPU-only host. Improve the supplied ReAct/BM25 starter to cover all required evidence within a 600-second index build and shared query budget. Reward is the fraction of gold documents recovered, averaged over 20 questions.
 
 * **Task name**: `search-swe/agentic-search`
 * **Domain**: `multi-constraint search`
@@ -42,8 +42,10 @@ reward = mean(GoldRecall@5)
 score = 100 * reward
 ```
 
-Execution and output validation are hard gates. Retrieval quality is scored deterministically, without an answer judge. A separate trajectory audit checks resource, retrieval-round and integrity constraints. A confirmed violation zeros the entire reward; missing trajectory or a failed audit invalidates the run and cannot produce positive credit. The complete verifier has a 17,100-second limit, including this audit.
+Execution and output validation are hard gates. Retrieval quality is deterministic; the separate audit checks resource, retrieval-round and integrity constraints. The complete verifier allows 20,000 seconds, including auditing.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/agentic-search/instruction.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/agentic-search/task.toml)
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
+
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/agentic-search/instruction.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/agentic-search/task.toml)
 for the complete contract at the reviewed benchmark revision.

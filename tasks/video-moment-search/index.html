@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Locate the time interval matching a natural-language description within a specified video." />
+  <meta name="description" content="Locate a described video interval from frozen frame features on one GPU, with fine scoring of at most 64 intervals per request." />
   <meta name="theme-color" content="#ffffff" />
   <title>Video-Moment Search — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,8 +38,8 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>GPU</span><div class="task-name-control"><code>video-moment-search</code><button type="button" class="copy-task-name" data-task-name="video-moment-search" aria-label="Copy task name: video-moment-search" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/video-moment-search" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Video-Moment Search</h1>
-        <div class="task-summary"><p>Locate the time interval matching a natural-language description within a specified video.</p></div>
-        <dl class="task-specs"><div><dt>Domain</dt><dd><code>temporal video retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Video-Moment Search</code></dd></div><div><dt>Primary metric</dt><dd><code>SourceMacroGridUtility</code></dd></div></dl>
+        <div class="task-summary"><p>Locate a described video interval from frozen frame features on <strong>one GPU</strong>, with fine scoring of at most <strong>64 intervals per request</strong>. Raw video is unavailable; boundaries must follow the supplied time grid. Quality combines temporal overlap and threshold hits, normalized by the best grid-feasible interval; the reference quality maps to 15/100. Optional trainable components are limited to five million parameters.</p></div>
+        <dl class="task-specs"><div><dt>Domain</dt><dd><code>temporal video retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Temporal localization from fixed frame features</code></dd></div><div><dt>Primary metric</dt><dd><code>Grid-normalized temporal-overlap utility</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>temporal video retrieval</span><span>search-swe</span></div>
       </header>
       <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
@@ -61,14 +61,14 @@
 <p>Divide each query&#x27;s utility by the best utility attainable with one legal interval on its supplied grid. Average within each source, then give the two sources equal weight.</p>
 <p>Grid-optimal witnesses remain verifier-only. Invalid, reversed, missing, nonfinite or non-grid intervals score zero. The grid correction accounts for boundary precision limits; a long interval still loses IoU when it includes unrelated time.</p>
 <h3 id="reward-mapping">Reward mapping</h3>
-<p>The final reward uses the raw quality described above, with fixed reference quality <code>b = 0.14696558206208937</code> and integer score anchor <code>a = 15</code> on the 0–100 scale:</p>
-<pre><code class="language-text">reward(q) = (a / 100) * q / b                             if 0 &lt;= q &lt;= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b &lt; q &lt;= 1</code></pre>
-<p>This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward precision; a displayed 0–100 score is rounded to one decimal place. Correctness and trajectory-audit gates take precedence over this conversion.</p>
+<p>For raw quality <code>Q</code>, use <code>b=0.14696558206208937</code> and <code>a=0.15</code>:</p>
+<pre><code class="language-text">reward = a * Q / b                         if Q &lt;= b
+         a + (1-a) * (Q-b) / (1-b)         if Q &gt; b</code></pre>
+<p>This maps quality 0, b and 1 to scores 0, 15 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.</p>
 <h3 id="validity-and-failure-handling">Validity and failure handling</h3>
 <p>The verifier checks successful index construction, executable behavior, query IDs, finite start/end values, interval order, grid endpoints and stage limits. Completed valid JSONL rows remain usable after a query timeout; missing or invalid query results score zero. A non-timeout query-command failure invalidates that call.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/video-moment-search/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/video-moment-search/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/video-moment-search/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/video-moment-search/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/video-moment-search/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/video-moment-search/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../training-error-tracing/"><span>Previous task</span><strong>Training Error Tracing</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

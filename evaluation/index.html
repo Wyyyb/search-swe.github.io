@@ -51,7 +51,7 @@
       <aside class="evaluation-requirements" aria-labelledby="requirements-title">
         <h2 id="requirements-title">Before you start</h2>
         <div>
-          <p>Python 3.12+, Git and native Linux x86_64 with <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#prerequisites" target="_blank" rel="noreferrer">local rootful Docker</a>. Check the <a href="../tasks/">selected tasks</a> for CPU, memory and GPU requirements; some also need <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#bounded-task-storage" target="_blank" rel="noreferrer">sudo and FUSE</a>.</p>
+          <p>Python 3.12+, Git and native Linux x86_64 with <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#prerequisites" target="_blank" rel="noreferrer">local rootful Docker</a>. GPU tasks need an NVIDIA GPU, a CUDA 13.0-compatible driver and Container Toolkit. Check the <a href="../tasks/">selected tasks</a> for resources; some also need <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/runtime.md#bounded-task-storage" target="_blank" rel="noreferrer">sudo and FUSE</a>. Run <code>search-swe doctor</code> to check the host.</p>
           <p>Enabled OpenRouter submission keys require a fixed <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md" target="_blank" rel="noreferrer">model allowlist</a>: <strong>47 models</strong> for the shared key, <strong>17</strong> for reasoning-query-rewriting. Apply it in OpenRouter before entering the key. Coding-agent and judge keys use separate model access.</p>
           <p>The CLI checks these restrictions before saving settings or running tasks. Checks send short API requests; accepted requests may incur small charges.</p>
         </div>
@@ -78,7 +78,8 @@
               <h3>Choose your setting and tasks</h3>
               <pre><code>search-swe run</code></pre>
               <p>The wizard finds your checkout or helps you clone one to <code>~/Search-SWE</code> or a custom path, then remembers its location.</p>
-              <p>Choose Codex, Claude Code or Pi with OpenRouter or a supported direct provider. Select the model and reasoning effort, enter missing keys, then select tasks and configure their services.</p>
+              <p>Choose your agent, provider, model and reasoning effort, enter missing keys, then select tasks and configure their services. Codex, Claude Code and Pi support integrated OpenRouter and direct routes.</p>
+              <p>Harbor’s registered agents are also available with <code>--provider native</code>, including Gemini CLI, Antigravity, OpenCode and OpenHands. Run <code>search-swe agents</code> to discover agents and their trajectory support, or <code>search-swe agents --agent NAME --json</code> for native settings. See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/agents.md#harbor-native-agents" target="_blank" rel="noreferrer">native agent guide</a> for credentials and <code>--agent-config</code>.</p>
               <p class="evaluation-hint"><strong>Default setting:</strong> Codex + OpenRouter + GPT-6 Luna (max).</p>
               <p class="evaluation-hint">See <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/agents.md" target="_blank" rel="noreferrer">supported agents and providers</a>. For Pi, <code>search-swe pi-models</code> lists providers and their model counts; add <code>--provider NAME</code> for exact model IDs.</p>
             </div>
@@ -86,7 +87,8 @@
           <li>
             <div>
               <h3>Review resources and start</h3>
-              <p>Review the task and cache locations, disk-space estimate and resource requirements. Choose sequential or parallel execution, then confirm to download and verify assets, allocate resources and launch the run.</p>
+              <p>Review the task and cache locations, disk-space estimate and resource requirements. Choose sequential or parallel execution, then confirm to download and verify assets, prepare the coding agent, allocate resources and launch the run.</p>
+              <p class="evaluation-hint">Codex, Claude Code, Pi, Gemini CLI and Antigravity CLI are installed automatically, checked against the selected version and cached for reuse. Use <code>--agent-version VERSION</code> to select an exact version, or <code>default</code> for the checkout’s default. See <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/agents.md#harness-versions-and-installation" target="_blank" rel="noreferrer">versions and installation</a>.</p>
               <p class="evaluation-hint">The Hugging Face cache takes space in addition to task files. Set <code>HF_HUB_CACHE</code> in your shell or selected <code>.env</code> to move it to another disk; task copies stay in the checkout. See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/assets.md#disk-space-and-cache-locations" target="_blank" rel="noreferrer">storage guide</a>.</p>
               <p class="evaluation-hint">Use <code>search-swe info</code> to inspect your checkout. Between evaluation batches, preview updates with <code>search-swe update --check</code>, then apply them with <code>search-swe update</code>. See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/cli.md#update-tasks-and-inspect-the-checkout" target="_blank" rel="noreferrer">update guide</a>.</p>
             </div>

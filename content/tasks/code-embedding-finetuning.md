@@ -1,6 +1,6 @@
 # Code Embedding Fine-tuning
 
-Improve a code-retrieval embedding model using supplied training data. The task starts from the fixed `BAAI/bge-base-en-v1.5` backbone and evaluates whether the submitted checkpoint can place the relevant code document at rank one on unseen queries.
+Fine-tune the supplied BGE embedder **offline in six hours on one GPU**, preserving its architecture and parameter count. Use 5,000 training examples to improve rank-one code retrieval on unseen queries. The verifier fixes tokenization, pooling and exact search; reward is the absolute Accuracy@1 gain over the original checkpoint, not the submitted model’s total accuracy.
 
 * **Task name**: `search-swe/code-embedding-finetuning`
 * **Domain**: `code retrieval`
@@ -39,8 +39,10 @@ The verifier compares the original backbone and the submitted checkpoint using t
 max(0, submitted Accuracy@1 - original-backbone Accuracy@1)
 ```
 
-Final reward equals this gain when evaluation is valid and the trajectory audit passes. Invalid evaluation, timeouts, or a failed audit receive a reward of `0`.
+Invalid evaluation or timeouts give zero reward; the integrity audit also gates this gain.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-embedding-finetuning/instruction.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-embedding-finetuning/task.toml)
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
+
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-embedding-finetuning/instruction.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-embedding-finetuning/task.toml)
 for the complete contract at the reviewed benchmark revision.

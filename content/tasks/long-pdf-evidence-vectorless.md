@@ -1,6 +1,6 @@
 # Long-PDF Sentence Evidence — Vectorless
 
-Build an embedding-free index of a long novel and return complete original sentences that jointly support interpretive questions.
+Find up to **five supporting sentences** in a 2,043-page novel, using **no embeddings**, a CPU-only index and **900 seconds per query**. The source PDF and sentence inventory become inaccessible after build. Recover evidence that jointly supports an interpretation, not just a related scene. Quality averages three independent semantic-support judgments per question; the full query phase also has a shared 1,800-second limit.
 
 * **Task name**: `search-swe/long-pdf-evidence-vectorless`
 * **Domain**: `in-document evidence retrieval`
@@ -15,7 +15,7 @@ Build an embedding-free index of a long novel and return complete original sente
 * **Build limit**: `2,400 seconds`
 * **Query limits**: `900 seconds` each; `1,800 seconds` shared by the query phase
 * **Concurrency**: up to five queries; an additional `60 seconds` allows cleanup
-* **Verifier budget**: `10,800 seconds`
+* **Verifier budget**: `14,400 seconds`
 
 Embeddings are prohibited at every stage, including local models, endpoints and
 precomputed vectors. Lexical indexing, document structure and documented generation
@@ -59,24 +59,16 @@ answers, paraphrases or partial sentences. Empty results are valid and score zer
 
 ## Evaluation
 
-Evidence is judged for semantic support, not matching reference wording or sentence IDs. Equivalent explanations and harmless redundancy are accepted, while requested comparisons, qualifications and causal links must still be supported. Material contradictions or unresolved essential referents prevent complete-support credit.
-
-The verifier checks source hashes and sentence membership. A separate answer
-judge evaluates whether the entire evidence set fully supports the requested
-interpretation. Alternative original evidence is accepted; topical similarity
-or the right scene alone is insufficient. SentenceEvidenceAccuracy is the fraction
-of all twelve questions receiving complete-support credit.
+Reward is mean SentenceEvidenceAccuracy over twelve questions. After checking source hashes and sentence membership, judge each fixed evidence set independently three times and average the binary support decisions; retrieval runs once. Evidence must fully support the requested interpretation, including comparisons, qualifications and causal links. Alternative original sentences are accepted, but topical overlap, contradictions or unresolved referents do not establish complete support.
 
 Invalid, missing, failed or timed-out queries remain in the denominator with
 zero, without erasing other successful queries. Shared build/setup failure
 prevents scoring. Judge API or parsing failures invalidate the measurement and
 fail closed with zero reward; they are reported separately from retrieval errors.
 
-The answer judge is OpenRouter `deepseek/deepseek-v4.1-flash`, with high reasoning
-effort and temperature zero. It has a 2,700-second budget. Its credentials and
-model permission are not granted to submission code. A separate 3,600-second
+Configure the verifier-only `ANSWER_JUDGE_MODEL_NAME`, `ANSWER_JUDGE_BASE_URL` and `ANSWER_JUDGE_API_KEY`; the endpoint must satisfy the task’s verifier network policy. The evidence judge uses high reasoning effort and temperature zero, within a 5,400-second budget. Its credentials and model permission are not granted to submission code. A separate 3,600-second
 trajectory audit must return a valid binary pass to preserve the 0–1 accuracy reward.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-pdf-evidence-vectorless/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-pdf-evidence-vectorless/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-pdf-evidence-vectorless/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-pdf-evidence-vectorless/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-pdf-evidence-vectorless/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-pdf-evidence-vectorless/task.toml).

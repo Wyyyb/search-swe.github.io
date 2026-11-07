@@ -1,11 +1,11 @@
 # Evolving Personal Memory
 
-Answer questions from a person’s conversation history as it stood at a specified session.
+Answer questions from conversation history using **at most 350 retrieved records**, CPU-only retrieval and **600 seconds per answer**. Respect each person’s session cutoff, retain relevant facts and forget superseded ones; the answerer sees only retrieved text. Quality penalizes failures to forget as well as missing memories, with the reference quality mapped to 20/100.
 
 * **Task name**: `search-swe/evolving-personal-memory`
 * **Domain**: `conversation memory`
-* **Primary focus**: `Evolving Personal Memory`
-* **Primary metric**: `FAMA`
+* **Primary focus**: `Time-aware recall and forgetting`
+* **Primary metric**: `Memory accuracy penalized for forgetting failures (FAMA)`
 * **Tags**: `conversation memory`, `search-swe`
 
 ## Runtime and requirements
@@ -42,32 +42,26 @@ Search receives `query_id`, `persona_id`, `cutoff_session`, `question`; return e
 
 ## Evaluation
 
-Three independent judge configurations vote on each deduplicated criterion.
-MPA measures passed memory criteria, FAA measures passed forgetting criteria,
-and lambda is the fraction of criteria that concern forgetting.
+Three independent judge configurations assess each deduplicated criterion. For each configuration, MPA measures passed memory criteria, FAA measures passed forgetting criteria, and lambda is the fraction of criteria that concern forgetting.
 
 ```text
 FAMA = max(0, MPA - lambda * (1 - FAA))
 ```
 
-Final quality is mean FAMA over 595 held-out questions. Retrieval IDs assemble the answer request and are not a
+Compute FAMA separately for each configuration and average the three FAMA values arithmetically for that answer. Final quality is the mean over 595 held-out questions; a failed or incomplete judge call invalidates the measurement. Retrieval IDs assemble the answer request and are not a
 separate retrieval-quality metric. Record IDs are not appended to judged answer
 text.
 
 ### Reward mapping
 
-The final reward uses the raw quality described above, with fixed reference
-quality `b = 0.3712215103709065` and integer score anchor `a = 20` on the 0–100 scale:
+For raw quality `Q`, use `b=0.3712215103709065` and `a=0.2`:
 
 ```text
-reward(q) = (a / 100) * q / b                             if 0 <= q <= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b < q <= 1
+reward = a * Q / b                         if Q <= b
+         a + (1-a) * (Q-b) / (1-b)         if Q > b
 ```
 
-This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and
-auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward
-precision; a displayed 0–100 score is rounded to one decimal place.
-Correctness and trajectory-audit gates take precedence over this conversion.
+This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.
 
 ### Validity and failure handling
 
@@ -77,9 +71,9 @@ Each answer process tree and workspace are removed before its role is reused.
 Transport or malformed-response failures in trusted judging invalidate the
 measurement and must not be interpreted as model quality.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/evolving-personal-memory/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/evolving-personal-memory/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/evolving-personal-memory/task.toml)
 for the complete contract at the synchronized benchmark revision.

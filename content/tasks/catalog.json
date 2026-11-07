@@ -2,7 +2,7 @@
   {
     "title": "Reasoning-intensive Query Rewriting",
     "navTitle": "Reasoning-intensive Query Rewriting",
-    "summary": "Build retrieval over a biology corpus by rewriting natural-language queries into precise search intent.",
+    "summary": "Retrieve three relevant biology documents across terminology and reasoning gaps, with 16 CPUs, no GPU and 900 seconds for ten queries.",
     "tag": "query understanding",
     "status": "setting",
     "featured": true,
@@ -13,7 +13,7 @@
   {
     "title": "Memory-constrained Dense Retrieval",
     "navTitle": "Memory-constrained Dense Retrieval",
-    "summary": "Search 1.5 million vectors within 512 MiB of memory and a 64 MiB deployable index workspace.",
+    "summary": "Search 1.5 million vectors with one query CPU, 512 MiB RAM and a 64 MiB index workspace, including runtime caches.",
     "tag": "large-scale dense search",
     "status": "setting",
     "featured": true,
@@ -24,7 +24,7 @@
   {
     "title": "Scientific-Paper Question Answering",
     "navTitle": "Scientific-Paper Question Answering",
-    "summary": "Answer scientific questions over 300 research-paper PDFs and identify the supporting paper.",
+    "summary": "Answer questions over 300 research-paper PDFs on 16 CPUs and 16 GiB RAM, with 900 seconds per question and permitted APIs.",
     "tag": "scientific RAG",
     "status": "setting",
     "featured": false,
@@ -34,7 +34,7 @@
   {
     "title": "Long-PDF Sentence Evidence",
     "navTitle": "Long-PDF Sentence Evidence",
-    "summary": "Retrieve complete original sentences that jointly support interpretations of a long novel.",
+    "summary": "Find up to five original supporting sentences in a 2,043-page novel within 30 seconds per query, using CPU-only retrieval and permitted APIs.",
     "tag": "in-document search",
     "status": "setting",
     "featured": false,
@@ -44,7 +44,7 @@
   {
     "title": "Long-document Reranking",
     "navTitle": "Long-document Reranking",
-    "summary": "Improve a fixed reranker when relevant evidence lies beyond the first token window of a document.",
+    "summary": "Rerank 100 fixed candidates per question using an unchanged local BGE model, without a GPU, in 3,600 seconds per 100-query batch.",
     "tag": "reranking",
     "status": "setting",
     "featured": true,
@@ -55,7 +55,7 @@
   {
     "title": "Code Embedding Fine-tuning",
     "navTitle": "Code Embedding Fine-tuning",
-    "summary": "Improve a fixed-backbone code-retrieval embedder using the supplied training data and constraints.",
+    "summary": "Fine-tune the supplied BGE embedder offline in six hours on one GPU, preserving its architecture and parameter count.",
     "tag": "representation learning",
     "status": "setting",
     "featured": true,
@@ -66,7 +66,7 @@
   {
     "title": "Query-side Encoder Alignment",
     "navTitle": "Query-side Encoder Alignment",
-    "summary": "Improve a compact query encoder over a measured ridge baseline while keeping document vectors fixed and meeting a relative runtime gate.",
+    "summary": "Align a 0.6B query encoder to fixed document vectors on one GPU, using at most 60% of the measured 4B reference runtime.",
     "tag": "query encoder optimization",
     "status": "setting",
     "featured": false,
@@ -77,7 +77,7 @@
   {
     "title": "Agentic Search",
     "navTitle": "Agentic Search",
-    "summary": "Optimize a ReAct retrieval starter to return five documents for multi-constraint BrowseComp-Plus queries.",
+    "summary": "Find five documents answering a multi-constraint question over 100,195 documents, with at most 20 search actions on a CPU-only host.",
     "tag": "agentic search",
     "status": "setting",
     "featured": false,
@@ -87,7 +87,7 @@
   {
     "title": "Sparse Retrieval Pruning",
     "navTitle": "Sparse Retrieval Pruning",
-    "summary": "Optimize candidate generation and postings pruning for opaque, unweighted sparse retrieval while preserving ranking quality.",
+    "summary": "Speed up sparse retrieval over one million documents using single-threaded Python on one CPU, preserving nDCG@10 ≥0.89 and Recall@100 ≥0.99.",
     "tag": "sparse postings · pruning · latency",
     "status": "setting",
     "featured": false,
@@ -98,7 +98,7 @@
   {
     "title": "Rust BM25 Search",
     "navTitle": "Rust BM25 Search",
-    "summary": "Build a Rust BM25 engine over 8.8M passages and balance retrieval quality, query time, and index size against a fixed Pyserini reference.",
+    "summary": "Implement a Rust BM25 engine over 8.84 million passages using 4 CPUs, 16 GiB RAM and 64 GiB storage, without an existing search engine.",
     "tag": "BM25 · Rust · indexing",
     "status": "setting",
     "featured": false,
@@ -108,7 +108,7 @@
   {
     "title": "Agentic Search — Vectorless",
     "navTitle": "Agentic Search — Vectorless",
-    "summary": "Build retrieval over BrowseComp-Plus without embeddings or BM25, returning five documents for each multi-constraint question.",
+    "summary": "Find five documents in a 100,195-document corpus using neither embeddings nor BM25, with at most 20 search actions per question.",
     "tag": "vectorless search",
     "status": "setting",
     "featured": false,
@@ -118,7 +118,7 @@
   {
     "title": "Biomedical Graph Retrieval",
     "navTitle": "Biomedical Graph Retrieval",
-    "summary": "Answer biomedical graph questions by returning the complete set of matching node IDs from a supplied SQLite knowledge graph.",
+    "summary": "Translate biomedical questions into graph retrieval on 16 CPUs, returning the complete answer set within 30 seconds per question.",
     "tag": "graph retrieval",
     "status": "setting",
     "featured": false,
@@ -128,7 +128,7 @@
   {
     "title": "ChunQiu Temporal Retrieval",
     "navTitle": "ChunQiu Temporal Retrieval",
-    "summary": "Retrieve Classical Chinese annal records for reign dates and temporal constraints while distinguishing events from later commentary.",
+    "summary": "Retrieve Classical Chinese annal records on one GPU, answering the full 775-query batch in 120 seconds.",
     "tag": "temporal retrieval",
     "status": "setting",
     "featured": false,
@@ -138,7 +138,7 @@
   {
     "title": "Code Context Retrieval",
     "navTitle": "Code Context Retrieval",
-    "summary": "Find compact source-code regions that provide the context needed to understand an issue in its specified repository snapshot.",
+    "summary": "Find an issue’s source-code context in 180 seconds on CPUs, returning at most five regions and 500 lines from its repository snapshot.",
     "tag": "code context retrieval",
     "status": "setting",
     "featured": false,
@@ -148,7 +148,7 @@
   {
     "title": "Code Reranker Fine-tuning",
     "navTitle": "Code Reranker Fine-tuning",
-    "summary": "Fine-tune a fixed BGE reranker to improve top-five code retrieval over shared BM25 and local embedding candidates.",
+    "summary": "Fine-tune a fixed BGE reranker offline in six hours on one GPU, changing weights but preserving the architecture and tokenizer.",
     "tag": "reranker training",
     "status": "setting",
     "featured": false,
@@ -158,7 +158,7 @@
   {
     "title": "Decision Model Training",
     "navTitle": "Decision Model Training",
-    "summary": "Train a compact local model to make structured categorical, Boolean and ordinal decisions on previously unseen task schemas.",
+    "summary": "Train a compact Qwen3-0.6B decision model offline in six hours on one GPU, then process 4,200 requests in 240 seconds.",
     "tag": "decision model training",
     "status": "setting",
     "featured": false,
@@ -168,7 +168,7 @@
   {
     "title": "Join-aware Table Retrieval",
     "navTitle": "Join-aware Table Retrieval",
-    "summary": "Retrieve the tables and column-level joins needed to answer a question from a catalog of relational schemas.",
+    "summary": "Select five tables and up to six joins from 1,056 tables in 20 seconds per request, with a CPU-only 8 GiB index.",
     "tag": "table and join retrieval",
     "status": "setting",
     "featured": false,
@@ -178,7 +178,7 @@
   {
     "title": "Legal Stance Retrieval",
     "navTitle": "Legal Stance Retrieval",
-    "summary": "Retrieve court documents that support or refute a claim according to the stance requested by the query.",
+    "summary": "Rank court documents supporting or refuting a requested claim, processing 311 queries in 20 seconds on one GPU.",
     "tag": "stance-aware retrieval",
     "status": "setting",
     "featured": false,
@@ -188,7 +188,7 @@
   {
     "title": "Long-PDF Sentence Evidence — Vectorless",
     "navTitle": "Long-PDF Sentence Evidence — Vectorless",
-    "summary": "Build an embedding-free index of a long novel and return complete original sentences that jointly support interpretive questions.",
+    "summary": "Find up to five supporting sentences in a 2,043-page novel, using no embeddings, a CPU-only index and 900 seconds per query.",
     "tag": "vectorless evidence retrieval",
     "status": "setting",
     "featured": false,
@@ -198,7 +198,7 @@
   {
     "title": "Negative-Constraint Retrieval",
     "navTitle": "Negative-Constraint Retrieval",
-    "summary": "Retrieve one passage that satisfies the requested subjects while excluding forbidden content anywhere in the passage.",
+    "summary": "Find one passage satisfying positive requirements and exclusions in eight seconds on 4 CPUs, including any permitted API calls.",
     "tag": "negative constraints",
     "status": "setting",
     "featured": false,
@@ -208,7 +208,7 @@
   {
     "title": "Quantity-aware Retrieval",
     "navTitle": "Quantity-aware Retrieval",
-    "summary": "Retrieve clinical passages that satisfy numerical conditions, using supplied examples and a local embedding model.",
+    "summary": "Rank clinical passages satisfying numerical conditions in five seconds per query on one GPU, using the supplied model and examples.",
     "tag": "numerical constraints",
     "status": "setting",
     "featured": false,
@@ -220,7 +220,7 @@
     "title": "Budgeted Bimetric Retrieval",
     "navTitle": "Budgeted Bimetric Retrieval",
     "tag": "budgeted vector retrieval",
-    "summary": "Search 250,000 NQ passages using cheap vectors and at most 20 expensive distance evaluations per question.",
+    "summary": "Search 250,000 passages with cheap vectors, 20 expensive distance evaluations per query and a two-second median response limit.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -230,7 +230,7 @@
     "title": "Budgeted Candidate Reranking",
     "navTitle": "Budgeted Candidate Reranking",
     "tag": "metered reranking",
-    "summary": "Allocate a small local-model token budget to rerank a fixed pool of 100 BM25 passages.",
+    "summary": "Rerank 100 fixed BM25 candidates using a frozen local model and 2,048 weighted tokens per query, on one GPU capped at 24 GiB.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -240,7 +240,7 @@
     "title": "Composed Image Search",
     "navTitle": "Composed Image Search",
     "tag": "composed image retrieval",
-    "summary": "Find gallery photographs matching a reference image plus a requested change.",
+    "summary": "Retrieve photographs matching an image plus a requested change, using one GPU and at most 100 additional candidate-image inspections per request.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -250,7 +250,7 @@
     "title": "Constrained Molecular Search",
     "navTitle": "Constrained Molecular Search",
     "tag": "molecular retrieval",
-    "summary": "Recover the best feasible 10,000 compounds from a 12.4-million-combination library under changing property constraints.",
+    "summary": "Find 10,000 high-scoring feasible compounds in a 12.4-million-combination library, within a two-second median response time on one GPU.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -260,7 +260,7 @@
     "title": "Document Page Search",
     "navTitle": "Document Page Search",
     "tag": "multilingual page retrieval",
-    "summary": "Find supporting pages across multilingual reports containing text, charts and tables.",
+    "summary": "Find supporting pages across multilingual reports using one GPU, with 2,700 seconds per batch of up to 7,250 requests.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -270,7 +270,7 @@
     "title": "Evolving Personal Memory",
     "navTitle": "Evolving Personal Memory",
     "tag": "conversation memory",
-    "summary": "Answer questions from a person’s conversation history as it stood at a specified session.",
+    "summary": "Answer questions from conversation history using at most 350 retrieved records, CPU-only retrieval and 600 seconds per answer.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -280,7 +280,7 @@
     "title": "Filtered ANN Retrieval",
     "navTitle": "Filtered ANN Retrieval",
     "tag": "filtered vector search",
-    "summary": "Return exact filtered nearest neighbors from ten million tagged vectors under a 15 ms response deadline.",
+    "summary": "Return exact filtered Top-10 neighbors from ten million vectors within 15 ms median latency, using 8 CPUs and 16 GiB RAM.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -290,7 +290,7 @@
     "title": "Financial-Report Evidence Retrieval",
     "navTitle": "Financial-Report Evidence Retrieval",
     "tag": "financial evidence retrieval",
-    "summary": "Locate original report passages supporting financial questions across a collection of annual reports.",
+    "summary": "Find evidence across 885 financial reports on 8 CPUs, returning at most five spans of 512 characters each per question.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -300,7 +300,7 @@
     "title": "ICSI Meeting Memory",
     "navTitle": "ICSI Meeting Memory",
     "tag": "compact meeting memory",
-    "summary": "Compress meeting history into a small readable memory, then retrieve notes and answer questions from those notes alone.",
+    "summary": "Compress 67 meetings into 183,981 bytes of readable memory (5% of dialogue text) and answer from at most ten retrieved notes, without a local model or GPU.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -310,7 +310,7 @@
     "title": "Incremental Vector Search",
     "navTitle": "Incremental Vector Search",
     "tag": "incremental vector indexes",
-    "summary": "Maintain one vector index through insertions and large-K queries while improving near-perfect recall.",
+    "summary": "Maintain vector indexes through insertions and queries up to K=1,000, using one query CPU and at most 10% of exact-scan time.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -320,7 +320,7 @@
     "title": "Instruction-following Embedding",
     "navTitle": "Instruction-following Embedding",
     "tag": "compact query adapters",
-    "summary": "Adapt query embeddings to changed relevance instructions while retaining a fixed document-vector space.",
+    "summary": "Make query embeddings obey changed relevance instructions with a 512 KiB deployment payload, one E5 forward pass and one-second median queries.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -330,7 +330,7 @@
     "title": "Khmer-to-English Embedding Training",
     "navTitle": "Khmer-to-English Embedding Training",
     "tag": "cross-language training",
-    "summary": "Train a multilingual embedder and build retrieval from Khmer questions to English documents.",
+    "summary": "Adapt multilingual E5 for Khmer-to-English retrieval offline in six hours on one GPU, with only three labeled question/answer examples.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -340,7 +340,7 @@
     "title": "Large-scale Formula Retrieval",
     "navTitle": "Large-scale Formula Retrieval",
     "tag": "mathematical formula search",
-    "summary": "Search the full ARQMath formula collection with a compact CPU index and a 50 ms query deadline.",
+    "summary": "Search mathematical formulas with two CPU threads, 34 MiB for code and index, and a 50 ms deadline per query.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -350,7 +350,7 @@
     "title": "Layout Page Search",
     "navTitle": "Layout Page Search",
     "tag": "document evidence pages",
-    "summary": "Return a compact set of pages supporting a question within its specified document.",
+    "summary": "Find evidence pages within a document on one GPU, applying query-dependent fine scoring to at most 40 pages per request.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -360,7 +360,7 @@
     "title": "Lightweight Query Retrieval",
     "navTitle": "Lightweight Query Retrieval",
     "tag": "latency-constrained retrieval",
-    "summary": "Reduce complete-batch retrieval time while preserving useful results across three collections.",
+    "summary": "Retrieve for 1,271 queries in under 0.8 seconds median batch time on one GPU, while retaining macro nDCG@10 of at least 0.45.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -370,7 +370,7 @@
     "title": "Methodology Inspiration Retrieval",
     "navTitle": "Methodology Inspiration Retrieval",
     "tag": "research-method retrieval",
-    "summary": "Find papers whose methods can help address a proposed research problem beyond mere topical similarity.",
+    "summary": "Find three papers whose methods address a proposed research problem, processing 122 queries in 12 seconds on one GPU.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -380,7 +380,7 @@
     "title": "Multilingual Vector Postprocessing",
     "navTitle": "Multilingual Vector Postprocessing",
     "tag": "multilingual vector transforms",
-    "summary": "Improve cross-language retrieval by applying one frozen language-aware function to existing vectors.",
+    "summary": "Improve cross-language retrieval using only a frozen transform of existing vectors, with 16 GiB RAM, one GPU and 0.5-second median queries.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -390,7 +390,7 @@
     "title": "Narrative-Clue Search",
     "navTitle": "Narrative-Clue Search",
     "tag": "narrative retrieval",
-    "summary": "Find a remembered work from a long description containing scattered clues and uncertain recollections.",
+    "summary": "Identify a remembered work from scattered, uncertain clues on 8 CPUs, with 2,700 seconds per batch of up to 225 descriptions.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -400,7 +400,7 @@
     "title": "Paper Metadata Retrieval",
     "navTitle": "Paper Metadata Retrieval",
     "tag": "constrained paper search",
-    "summary": "Find the single paper satisfying both a substantive research need and its source-metadata constraints.",
+    "summary": "Find the single matching paper among 70,000 records in 30 seconds on 16 CPUs, without training or external search.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"
@@ -410,7 +410,7 @@
     "title": "Protein–Text Bidirectional Retrieval",
     "navTitle": "Protein–Text Bidirectional Retrieval",
     "tag": "protein-text embeddings",
-    "summary": "Learn compact representations that retrieve official protein–description pairs correctly in both directions.",
+    "summary": "Learn protein–text retrieval with 64-dimensional vectors and a 256 KiB total submission, using one GPU and P95 query latency at most one second.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -420,7 +420,7 @@
     "title": "Same-Place Image Search",
     "navTitle": "Same-Place Image Search",
     "tag": "landmark retrieval",
-    "summary": "Find photographs of the same physical place despite changes in viewpoint, scale and occlusion.",
+    "summary": "Find photos of the same physical place using frozen CLIP on one GPU, with geometric verification of at most 20 candidates per request.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -430,7 +430,7 @@
     "title": "Sketch-and-Text Image Search",
     "navTitle": "Sketch-and-Text Image Search",
     "tag": "sketch and text retrieval",
-    "summary": "Find an artwork using a partial sketch together with a description of its complete scene.",
+    "summary": "Retrieve artwork from a partial sketch and scene description using frozen CLIP on one GPU, with at most 30 minutes of fusion adaptation.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -440,7 +440,7 @@
     "title": "Spoken-Query Document Search",
     "navTitle": "Spoken-Query Document Search",
     "tag": "speech uncertainty retrieval",
-    "summary": "Retrieve documents from noisy speech-recognition hypotheses without access to clean questions or audio.",
+    "summary": "Retrieve documents from noisy speech-recognition hypotheses using one GPU, at most five query formulations and 50 extra reranking pairs per request.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -450,7 +450,7 @@
     "title": "Training Error Tracing",
     "navTitle": "Training Error Tracing",
     "tag": "training-record retrieval",
-    "summary": "Retrieve modified training records associated with erroneous generated answers while reducing latency and GPU memory.",
+    "summary": "Find modified training records linked to generation errors using one GPU, 16 GiB host RAM and ten seconds per query.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -460,7 +460,7 @@
     "title": "Video-Moment Search",
     "navTitle": "Video-Moment Search",
     "tag": "temporal video retrieval",
-    "summary": "Locate the time interval matching a natural-language description within a specified video.",
+    "summary": "Locate a described video interval from frozen frame features on one GPU, with fine scoring of at most 64 intervals per request.",
     "status": "setting",
     "featured": false,
     "hardware": "gpu"
@@ -470,7 +470,7 @@
     "title": "Visual-Document Question Answering",
     "navTitle": "Visual-Document Question Answering",
     "tag": "visual document QA",
-    "summary": "Answer questions from long documents containing text, charts and tables, including unanswerable requests.",
+    "summary": "Answer questions from long PDFs, charts and tables without a GPU, with 10,800 seconds per batch of up to 1,250 requests.",
     "status": "setting",
     "featured": false,
     "hardware": "cpu"

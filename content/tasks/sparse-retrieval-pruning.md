@@ -1,8 +1,6 @@
 # Sparse Retrieval Pruning
 
-Optimize a Python-only sparse retrieval system over one million documents with
-opaque, unweighted term IDs. Preserve retrieval quality while reducing query
-latency against the unpruned reference starter.
+Speed up sparse retrieval over one million documents using **single-threaded Python on one CPU**, preserving **nDCG@10 ≥0.89 and Recall@100 ≥0.99**. Prune work without losing relevant results. After all five runs pass both quality gates, reward grows from zero at 4× reference speedup to full credit at 16×, using median complete search times.
 
 * **Task name**: `search-swe/sparse-retrieval-pruning`
 * **Domain**: `learned sparse retrieval`
@@ -65,6 +63,9 @@ Fourfold speedup earns zero, tenfold earns 0.5, and sixteenfold or better earns 
 
 Candidate/reference build limits are 3,600/1,800 seconds, each search has 900 seconds and the overall verifier has 16,200 seconds. Both systems share the same one-CPU, one-thread, 32 GiB policy. Quality/output validation applies to every round. Execution, resource or required audit failure gives zero; self-reported counters are diagnostic.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/sparse-retrieval-pruning/instruction.md) for the current protocol.
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/sparse-retrieval-pruning/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/sparse-retrieval-pruning/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/sparse-retrieval-pruning/task.toml)
+for the complete contract at the synchronized benchmark revision.

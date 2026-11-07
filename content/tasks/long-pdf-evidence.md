@@ -1,10 +1,10 @@
 # Long-PDF Sentence Evidence
 
-Retrieve complete original sentences that jointly support interpretations of a long novel.
+Find up to **five original supporting sentences** in a 2,043-page novel within **30 seconds per query**, using CPU-only retrieval and permitted APIs. Evidence must jointly establish the requested interpretation, including comparisons and causal links. Quality averages three semantic-support judgments per question; any valid original sentence set can earn credit if it fully supports the interpretation.
 
 * **Task name**: `search-swe/long-pdf-evidence`
 * **Domain**: `in-document evidence retrieval`
-* **Primary focus**: `Long-PDF Sentence Evidence`
+* **Primary focus**: `Jointly sufficient original-sentence evidence`
 * **Primary metric**: `SentenceEvidenceAccuracy`
 * **Tags**: `in-document evidence retrieval`, `search-swe`
 
@@ -36,11 +36,13 @@ Build saves all runtime artifacts and starts a service ready for repeated query 
 
 Evidence is judged for semantic support, not matching reference wording or sentence IDs. Equivalent explanations and harmless redundancy are accepted, while requested comparisons, qualifications and causal links must still be supported. Material contradictions or unresolved essential referents prevent complete-support credit.
 
-SentenceEvidenceAccuracy is the mean complete-support outcome over all twelve questions. The semantic judge accepts alternative correct original evidence; matching reference IDs is unnecessary. Incomplete, empty, malformed, failed or timed-out results zero their query. Shared build/setup or audit failure zeros the task. Reward equals accuracy on a 0–1 scale; judge service failures invalidate the measurement rather than measure retrieval quality.
+Each fixed retrieved evidence set is judged independently three times. SentenceEvidenceAccuracy averages the three binary support decisions per question, then averages all twelve questions equally; retrieval runs once. Incomplete, empty, malformed, failed or timed-out results zero their query. Shared build/setup or audit failure zeros the task. Reward equals accuracy on a 0–1 scale; judge service failures invalidate the measurement rather than measure retrieval quality.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+Configure the verifier-only `ANSWER_JUDGE_MODEL_NAME`, `ANSWER_JUDGE_BASE_URL` and `ANSWER_JUDGE_API_KEY`; the endpoint must satisfy the task’s verifier network policy. Evidence judging has a 5,400-second budget within the 14,400-second verifier.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-pdf-evidence/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-pdf-evidence/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-pdf-evidence/task.toml)
+A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.
+
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-pdf-evidence/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-pdf-evidence/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-pdf-evidence/task.toml)
 for the complete contract at the synchronized benchmark revision.

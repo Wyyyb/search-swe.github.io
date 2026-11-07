@@ -1,6 +1,6 @@
 # Agentic Search — Vectorless
 
-Build retrieval over BrowseComp-Plus without embeddings or BM25, returning five documents for each multi-constraint question.
+Find five documents in a 100,195-document corpus using **neither embeddings nor BM25**, with at most **20 search actions** per question. Build CPU-only retrieval from scratch in 600 seconds; permitted generation can guide search, but external retrieval and reranking are unavailable. Reward is mean gold-document recall, so finding only one part of a multi-constraint question leaves credit behind.
 
 * **Task name**: `search-swe/agentic-search-vectorless`
 * **Domain**: `multi-step document retrieval`
@@ -14,7 +14,7 @@ Build retrieval over BrowseComp-Plus without embeddings or BM25, returning five 
 * **Compute**: `32` CPUs, `16 GiB` RAM, `200 GiB` storage; no GPU
 * **Build limit**: `600 seconds`
 * **Shared execution budget**: `15,300 seconds`, including build, queries and scoring
-* **Verifier budget**: `19,200 seconds`, including the compliance audit
+* **Verifier budget**: `27,000 seconds`, including the compliance audit
 
 No embeddings or BM25 variants are allowed during indexing or search. External
 retrieval and reranking services are prohibited. Only the generation resources
@@ -60,10 +60,10 @@ For each query, GoldRecall@5 is the fraction of its gold documents present in
 the returned five. Reward is the mean across all 20 evaluation queries, on a
 0–1 scale. There is no separate latency or index-size bonus.
 
-Execution failures or invalid output yield zero overall. A mandatory trajectory
-and submitted-code audit checks the resource policy, retrieval-round limit and
-other task constraints; only a valid passing audit preserves the retrieval reward.
+Execution failures or invalid output yield zero overall. The audit checks resource limits, retrieval rounds and submission integrity.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/agentic-search-vectorless/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/agentic-search-vectorless/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/agentic-search-vectorless/task.toml).
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
+
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/agentic-search-vectorless/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/agentic-search-vectorless/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/agentic-search-vectorless/task.toml).

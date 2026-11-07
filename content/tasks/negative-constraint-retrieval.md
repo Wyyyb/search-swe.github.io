@@ -1,6 +1,6 @@
 # Negative-Constraint Retrieval
 
-Retrieve one passage that satisfies the requested subjects while excluding forbidden content anywhere in the passage.
+Find one passage satisfying positive requirements and exclusions in **eight seconds on 4 CPUs**, including any permitted API calls. Forbidden content anywhere in the passage can disqualify an otherwise relevant match, so local keyword overlap is insufficient. Reward is top-one accuracy on subjects absent from the public examples.
 
 * **Task name**: `search-swe/negative-constraint-retrieval`
 * **Domain**: `constraint-aware passage retrieval`
@@ -61,6 +61,6 @@ A per-question timeout contributes zero and remains in the denominator. A build
 failure, non-timeout execution failure, invalid output, integrity violation or
 failed mandatory trajectory compliance audit sets the overall reward to zero.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/negative-constraint-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/negative-constraint-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/negative-constraint-retrieval/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/negative-constraint-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/negative-constraint-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/negative-constraint-retrieval/task.toml).

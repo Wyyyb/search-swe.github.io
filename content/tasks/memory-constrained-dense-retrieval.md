@@ -1,11 +1,11 @@
 # Memory-constrained Dense Retrieval
 
-Search 1.5 million vectors within 512 MiB of memory and a 64 MiB deployable index workspace.
+Search 1.5 million vectors with **one query CPU**, **512 MiB RAM** and a **64 MiB index workspace**, including runtime caches. First reach at least 95% top-three hit rate under the 0.5-second query deadline, then reduce P95 latency toward 30 ms. Reward combines accuracy and latency; compression and startup costs must both fit the limits.
 
 * **Task name**: `search-swe/memory-constrained-dense-retrieval`
 * **Domain**: `compact vector retrieval`
-* **Primary focus**: `Memory-constrained Dense Retrieval`
-* **Primary metric**: `Accuracy@3`
+* **Primary focus**: `Compression and low-latency CPU retrieval`
+* **Primary metric**: `Accuracy@3 × P95-latency factor, after a 95% accuracy gate`
 * **Tags**: `compact vector retrieval`, `search-swe`
 
 ## Runtime and requirements
@@ -31,11 +31,11 @@ Derive all corpus-dependent state during the measured build. All final generated
 
 A is mean latency-gated Accuracy@3 over 20 hidden queries: each requires valid captured output within 0.5 seconds and a relevant top-three hit. Require `A>=0.95`; otherwise reward is zero. After this gate, reward is `A*min(1,0.030/L95)`.
 
-L95 is the 19th sorted end-to-end duration. Failed launches/timeouts contribute 0.5 seconds; other durations include output capture and are capped at 0.5. There is one sequential pass, no hidden warmup, and no OS cache flush. Build failure, invalid/oversized index, final OOM, resource or integrity failure zeros the task.
+L95 is the 19th sorted end-to-end duration. Failed launches/timeouts contribute 0.5 seconds; other durations include output capture and are capped at 0.5. Five independent rounds each rebuild from an empty workspace, clear processes and IPC state, and query the same 20 items without warmup. Select the round with the median P95 and use both its accuracy and latency; do not pool the rounds. Query-result caches do not carry between rounds, and the OS file cache is not flushed. Build failure, invalid/oversized index, final OOM, resource or integrity failure zeros the task.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/memory-constrained-dense-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/memory-constrained-dense-retrieval/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/memory-constrained-dense-retrieval/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/memory-constrained-dense-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/memory-constrained-dense-retrieval/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/memory-constrained-dense-retrieval/task.toml)
 for the complete contract at the synchronized benchmark revision.

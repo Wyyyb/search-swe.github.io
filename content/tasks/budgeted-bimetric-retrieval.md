@@ -1,10 +1,10 @@
 # Budgeted Bimetric Retrieval
 
-Search 250,000 NQ passages using cheap vectors and at most 20 expensive distance evaluations per question.
+Search 250,000 passages with cheap vectors, **20 expensive distance evaluations** per query and a **two-second median** response limit. Choose which candidates deserve scarce accurate scores without seeing the expensive vectors. CPU-only retrieval earns normalized nDCG@10 gains above a frozen baseline; full credit reaches the exact expensive-search reference, and extra speed earns no bonus.
 
 * **Task name**: `search-swe/budgeted-bimetric-retrieval`
 * **Domain**: `budgeted vector retrieval`
-* **Primary focus**: `Budgeted Bimetric Retrieval`
+* **Primary focus**: `Selective use of costly distance feedback`
 * **Primary metric**: `baseline-normalized mean nDCG@10`
 * **Tags**: `budgeted vector retrieval`, `search-swe`
 
@@ -13,7 +13,7 @@ Search 250,000 NQ passages using cheap vectors and at most 20 expensive distance
 * **Agent budget**: `2 hours`
 * **Compute**: `16` CPUs, `32 GiB` RAM, `64 GiB` storage; `0` GPU(s)
 
-Offline CPU retrieval. Development divides the 16 CPUs/32 GiB between solver (15/31) and scorer (1/1); verification shares the full allocation. Build and reloads share 3,600 seconds. Each query has two seconds, including service calls and output. Storage includes fixed assets, submission, index and caches.
+Offline CPU retrieval. Development divides the 16 CPUs/32 GiB between solver (15/31) and scorer (1/1); verification shares the full allocation. Build and reloads share 3,600 seconds. Each query must meet a two-second median complete-response time across five measurements, with a three-second execution cap per measurement, including service calls and output. Storage includes fixed assets, submission, index and caches.
 
 ## Public input and output contract
 
@@ -29,15 +29,17 @@ Submit executable `/app/search.sh` and dependencies under `/app`:
 /app/search.sh --data-dir /task/public --index-dir /work/runtime/index --mode build
 ~~~
 
-Emit `{"op":"ready"}` and serve flushed JSONL. Queries have `op`, opaque `token`, `text`, `vector`. Send `{"op":"score","token":"...","doc_ids":["doc0"]}` for expensive L2 distances; each document costs one call, including repeats. Finish with `{"op":"result","token":"...","doc_ids":["doc0"]}`, at most ten unique ranked IDs. Zero calls and unscored final candidates are allowed. Support `--mode load` after failures. Code is read-only; runtime state uses the supplied working/index directory.
+Emit `{"op":"ready"}` and serve flushed JSONL. Queries have `op`, opaque `token`, `text`, `vector`. Send `{"op":"score","token":"...","doc_ids":["doc0"]}` for expensive L2 distances; each document costs one call, including repeats. Finish with `{"op":"result","token":"...","doc_ids":["doc0"]}`, at most ten unique ranked IDs. Zero calls and unscored final candidates are allowed. Support `--mode load` after failures. Code is read-only.
 
 ## Evaluation
 
-Mean nDCG@10 over all 3,452 queries gives Q, including failed queries as zero. Reward is `clip((Q-B)/(U-B),0,1)`: B is the strongest frozen resource-valid simple baseline, U exact full-corpus expensive-vector retrieval quality. U is a full-credit reference, not a theoretical relevance ceiling. The frozen values are `B=0.8460412084949013` and `U=0.9117533972383719`. Excess calls, query timeout or invalid output zero that query; build/reload, resource or integrity failures zero the task. Calls and speed earn no separate bonus.
+Build once; each of five full passes starts a fresh load worker with cleared scratch. Prepared artifacts become read-only after construction; query-time writes use `TMPDIR`. Each measurement has a fresh query token and a separate 20-score allowance. All five results must be valid and within budget; passing queries use the mean of their five nDCG@10 values.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+Mean nDCG@10 over all 3,452 queries gives Q, including failed queries as zero. Reward is `clip((Q-B)/(U-B),0,1)`: B is the strongest frozen resource-valid simple baseline, including a development-trained two-round feedback ranker, U exact full-corpus expensive-vector retrieval quality. U is a full-credit reference, not a theoretical relevance ceiling. The frozen values are `B=0.8863201879062371` and `U=0.9117533972383719`. Excess calls, query timeout or invalid output zero that query; build/reload, resource or integrity failures zero the task. Calls and speed earn no separate bonus.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/budgeted-bimetric-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/budgeted-bimetric-retrieval/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/budgeted-bimetric-retrieval/task.toml)
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
+
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/budgeted-bimetric-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/budgeted-bimetric-retrieval/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/budgeted-bimetric-retrieval/task.toml)
 for the complete contract at the synchronized benchmark revision.

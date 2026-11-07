@@ -1,10 +1,10 @@
 # Financial-Report Evidence Retrieval
 
-Locate original report passages supporting financial questions across a collection of annual reports.
+Find evidence across 885 financial reports on **8 CPUs**, returning at most **five spans of 512 characters each** per question. No target report is given. Returned text must fully cover required facts, including table context; partial overlap does not count. Mean evidence recall determines quality, with the reference mapped to 20/100. Generating a financial answer is not required.
 
 * **Task name**: `search-swe/financial-report-qa`
 * **Domain**: `financial evidence retrieval`
-* **Primary focus**: `Financial-Report Evidence Retrieval`
+* **Primary focus**: `Complete evidence coverage with short text spans`
 * **Primary metric**: `EvidenceRecall@5`
 * **Tags**: `financial evidence retrieval`, `search-swe`
 
@@ -51,18 +51,14 @@ by searching for the expected final answer number.
 
 ### Reward mapping
 
-The final reward uses the raw quality described above, with fixed reference
-quality `b = 0.6831800740440966` and integer score anchor `a = 20` on the 0–100 scale:
+For raw quality `Q`, use `b=0.6831800740440966` and `a=0.2`:
 
 ```text
-reward(q) = (a / 100) * q / b                             if 0 <= q <= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b < q <= 1
+reward = a * Q / b                         if Q <= b
+         a + (1-a) * (Q-b) / (1-b)         if Q > b
 ```
 
-This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and
-auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward
-precision; a displayed 0–100 score is rounded to one decimal place.
-Correctness and trajectory-audit gates take precedence over this conversion.
+This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.
 
 ### Validity and failure handling
 
@@ -73,9 +69,9 @@ increase recall. Completed valid JSONL rows remain usable after a query timeout;
 missing or invalid query results score zero. A non-timeout query-command failure
 invalidates that call.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/financial-report-qa/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/financial-report-qa/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/financial-report-qa/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/financial-report-qa/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/financial-report-qa/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/financial-report-qa/task.toml)
 for the complete contract at the synchronized benchmark revision.

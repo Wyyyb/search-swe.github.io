@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Locate original report passages supporting financial questions across a collection of annual reports." />
+  <meta name="description" content="Find evidence across 885 financial reports on 8 CPUs, returning at most five spans of 512 characters each per question." />
   <meta name="theme-color" content="#ffffff" />
   <title>Financial-Report Evidence Retrieval — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,8 +38,8 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>CPU</span><div class="task-name-control"><code>financial-report-qa</code><button type="button" class="copy-task-name" data-task-name="financial-report-qa" aria-label="Copy task name: financial-report-qa" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/financial-report-qa" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Financial-Report Evidence Retrieval</h1>
-        <div class="task-summary"><p>Locate original report passages supporting financial questions across a collection of annual reports.</p></div>
-        <dl class="task-specs"><div><dt>Domain</dt><dd><code>financial evidence retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Financial-Report Evidence Retrieval</code></dd></div><div><dt>Primary metric</dt><dd><code>EvidenceRecall@5</code></dd></div></dl>
+        <div class="task-summary"><p>Find evidence across 885 financial reports on <strong>8 CPUs</strong>, returning at most <strong>five spans of 512 characters each</strong> per question. No target report is given. Returned text must fully cover required facts, including table context; partial overlap does not count. Mean evidence recall determines quality, with the reference mapped to 20/100. Generating a financial answer is not required.</p></div>
+        <dl class="task-specs"><div><dt>Domain</dt><dd><code>financial evidence retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Complete evidence coverage with short text spans</code></dd></div><div><dt>Primary metric</dt><dd><code>EvidenceRecall@5</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>financial evidence retrieval</span><span>search-swe</span></div>
       </header>
       <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
@@ -60,14 +60,14 @@
 <p>A fact is covered when the union of returned spans in the correct report completely covers at least one verified location for that fact. Partial overlap is insufficient. Multiple hits on the same fact do not add credit. Several facts can fit in one span, and adjacent spans can jointly cover a fact.</p>
 <p>Evidence locations are aligned to complete FinQA support text and table context, with checks on numeric values and formatting. They are not inferred by searching for the expected final answer number.</p>
 <h3 id="reward-mapping">Reward mapping</h3>
-<p>The final reward uses the raw quality described above, with fixed reference quality <code>b = 0.6831800740440966</code> and integer score anchor <code>a = 20</code> on the 0–100 scale:</p>
-<pre><code class="language-text">reward(q) = (a / 100) * q / b                             if 0 &lt;= q &lt;= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b &lt; q &lt;= 1</code></pre>
-<p>This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward precision; a displayed 0–100 score is rounded to one decimal place. Correctness and trajectory-audit gates take precedence over this conversion.</p>
+<p>For raw quality <code>Q</code>, use <code>b=0.6831800740440966</code> and <code>a=0.2</code>:</p>
+<pre><code class="language-text">reward = a * Q / b                         if Q &lt;= b
+         a + (1-a) * (Q-b) / (1-b)         if Q &gt; b</code></pre>
+<p>This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.</p>
 <h3 id="validity-and-failure-handling">Validity and failure handling</h3>
 <p>The verifier checks successful index construction, executable behavior, query IDs, span count, report IDs, Unicode offsets and the 512-character limit. Duplicate output rows invalidate their query. Repeated evidence spans do not increase recall. Completed valid JSONL rows remain usable after a query timeout; missing or invalid query results score zero. A non-timeout query-command failure invalidates that call.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/financial-report-qa/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/financial-report-qa/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/financial-report-qa/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/financial-report-qa/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/financial-report-qa/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/financial-report-qa/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../filtered-ann-retrieval/"><span>Previous task</span><strong>Filtered ANN Retrieval</strong></a><a href="../icsi-meeting-memory/"><span>Next task</span><strong>ICSI Meeting Memory</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

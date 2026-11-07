@@ -1,6 +1,6 @@
 # Code Reranker Fine-tuning
 
-Fine-tune a fixed BGE reranker to improve top-five code retrieval over shared BM25 and local embedding candidates.
+Fine-tune a fixed BGE reranker **offline in six hours on one GPU**, changing weights but preserving the architecture and tokenizer. Improve top-five code retrieval within a frozen 200–400-document candidate pool. Reward is Accuracy@5 gain normalized by the remaining candidate-pool headroom; a document missed by the first stage cannot be recovered.
 
 * **Task name**: `search-swe/code-reranker-finetuning`
 * **Domain**: `code retrieval`
@@ -68,6 +68,6 @@ All 200 questions remain in every denominator, including first-stage misses.
 Invalid checkpoints, loading failures or phase timeouts yield zero. Scoring and
 checkpoint checks are deterministic; there is no trajectory judge.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-reranker-finetuning/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-reranker-finetuning/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-reranker-finetuning/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-reranker-finetuning/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-reranker-finetuning/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-reranker-finetuning/task.toml).

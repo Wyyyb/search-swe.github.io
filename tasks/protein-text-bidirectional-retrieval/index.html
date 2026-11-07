@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Learn compact representations that retrieve official protein–description pairs correctly in both directions." />
+  <meta name="description" content="Learn protein–text retrieval with 64-dimensional vectors and a 256 KiB total submission, using one GPU and P95 query latency at most one second." />
   <meta name="theme-color" content="#ffffff" />
   <title>Protein–Text Bidirectional Retrieval — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,14 +38,14 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>GPU</span><div class="task-name-control"><code>protein-text-bidirectional-retrieval</code><button type="button" class="copy-task-name" data-task-name="protein-text-bidirectional-retrieval" aria-label="Copy task name: protein-text-bidirectional-retrieval" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/protein-text-bidirectional-retrieval" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Protein–Text Bidirectional Retrieval</h1>
-        <div class="task-summary"><p>Learn compact representations that retrieve official protein–description pairs correctly in both directions.</p></div>
-        <dl class="task-specs"><div><dt>Domain</dt><dd><code>protein-text embeddings</code></dd></div><div><dt>Primary focus</dt><dd><code>Protein–Text Bidirectional Retrieval</code></dd></div><div><dt>Primary metric</dt><dd><code>Equal-weight mean of per-dataset strict reciprocal-top1 paired success fractions</code></dd></div></dl>
+        <div class="task-summary"><p>Learn protein–text retrieval with <strong>64-dimensional vectors</strong> and a <strong>256 KiB total submission</strong>, using one GPU and <strong>P95 query latency at most one second</strong>. Compress learned state while preserving exact paired identity in both directions. A pair earns credit only when protein-to-text and text-to-protein retrieval both rank its counterpart first; semantic similarity alone is insufficient.</p></div>
+        <dl class="task-specs"><div><dt>Domain</dt><dd><code>protein-text embeddings</code></dd></div><div><dt>Primary focus</dt><dd><code>Compact alignment with mutual top-one matching</code></dd></div><div><dt>Primary metric</dt><dd><code>Mutual top-one accuracy, equally weighted across two datasets</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>protein-text embeddings</span><span>search-swe</span></div>
       </header>
       <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a></nav></details>
       <div class="task-prose"><h2 id="runtime-and-requirements">Runtime and requirements</h2>
 <ul><li><strong>Agent budget</strong>: <code>1 hour</code></li><li><strong>Compute</strong>: <code>16</code> CPUs, <code>16 GiB</code> RAM, <code>100 GiB</code> storage; <code>1</code> GPU(s)</li></ul>
-<p>Offline A100 40 GB. Entire submission: at most 256 KiB, including code and learned state. Four independent dataset/direction groups each have 900 seconds for preparation, 3 seconds hard query timeout and p95 &lt;=1 second. Final vectors have exactly 64 dimensions.</p>
+<p>Offline, one GPU. Entire submission: at most 256 KiB, including code and learned state. Four independent dataset/direction groups each have 900 seconds for preparation, 3 seconds hard query timeout and p95 &lt;=1 second. Final vectors have exactly 64 dimensions.</p>
 <h2 id="public-input-and-output-contract">Public input and output contract</h2>
 <h3 id="inputs">Inputs</h3>
 <p>Supplied ESM-2 150M and BiomedBERT bases under <code>/task/models/</code>. Swiss-Prot and ProteinKG25 provide 430,595/422,315 training pairs. Public valid pools keep 10,000 candidates each with only ten labeled pairs per dataset. Evaluation retains strict official pairing, not semantic-equivalence labels.</p>
@@ -54,8 +54,8 @@
 <p>Candidate encoding and single-query encoding run in fresh isolated processes. Candidate caches/state cannot transfer to query encoders; only the trusted scorer retains vectors. It normalizes and ranks by cosine, ties by opaque ID. No query batching, cross-request cache or candidate-interaction reranking is allowed.</p>
 <h2 id="evaluation">Evaluation</h2>
 <p>Each of 10,000 official pairs per dataset succeeds only when both independent directions rank its counterpart first. Reward is the equal mean of these two mutual-top1 success rates. Directional Acc@1/Recall@20 are diagnostic. Failed or late queries fail their pair and remain in denominators. Any group’s p95 above one second, preparation failure, oversized submission or resource violation zeros the whole task.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/protein-text-bidirectional-retrieval/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/protein-text-bidirectional-retrieval/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/protein-text-bidirectional-retrieval/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/protein-text-bidirectional-retrieval/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/protein-text-bidirectional-retrieval/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/protein-text-bidirectional-retrieval/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../multilingual-vector-postprocessing/"><span>Previous task</span><strong>Multilingual Vector Postprocessing</strong></a><a href="../quantity-aware-retrieval/"><span>Next task</span><strong>Quantity-aware Retrieval</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

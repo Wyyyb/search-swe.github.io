@@ -1,6 +1,6 @@
 # Biomedical Graph Retrieval
 
-Answer biomedical graph questions by returning the complete set of matching node IDs from a supplied SQLite knowledge graph.
+Translate biomedical questions into graph retrieval on **16 CPUs**, returning the complete answer set within **30 seconds per question**. Multi-hop reasoning must recover every matching node without adding extras; partial sets earn nothing. Reward is exact-set accuracy over 20 questions. Model training and external search are prohibited.
 
 * **Task name**: `search-swe/biomedical-graph-retrieval`
 * **Domain**: `biomedical knowledge graphs`
@@ -58,6 +58,8 @@ A per-question timeout contributes zero for that question. Build failure,
 non-timeout execution failure, invalid output or a failed mandatory trajectory
 compliance audit sets the overall reward to zero. The audit does not judge relevance.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/biomedical-graph-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/biomedical-graph-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/biomedical-graph-retrieval/task.toml).
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
+
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/biomedical-graph-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/biomedical-graph-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/biomedical-graph-retrieval/task.toml).

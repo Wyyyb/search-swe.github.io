@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Find a remembered work from a long description containing scattered clues and uncertain recollections." />
+  <meta name="description" content="Identify a remembered work from scattered, uncertain clues on 8 CPUs, with 2,700 seconds per batch of up to 225 descriptions." />
   <meta name="theme-color" content="#ffffff" />
   <title>Narrative-Clue Search — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,8 +38,8 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>CPU</span><div class="task-name-control"><code>narrative-clue-search</code><button type="button" class="copy-task-name" data-task-name="narrative-clue-search" aria-label="Copy task name: narrative-clue-search" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/narrative-clue-search" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Narrative-Clue Search</h1>
-        <div class="task-summary"><p>Find a remembered work from a long description containing scattered clues and uncertain recollections.</p></div>
-        <dl class="task-specs"><div><dt>Domain</dt><dd><code>narrative retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Narrative-Clue Search</code></dd></div><div><dt>Primary metric</dt><dd><code>QueryMeanNDCG@10</code></dd></div></dl>
+        <div class="task-summary"><p>Identify a remembered work from scattered, uncertain clues on <strong>8 CPUs</strong>, with <strong>2,700 seconds per batch of up to 225 descriptions</strong>. Resolve long narratives whose details may be incomplete or mistaken. Quality is mean nDCG@10 over 445 questions, giving each question equal weight; the reference quality maps to 20/100.</p></div>
+        <dl class="task-specs"><div><dt>Domain</dt><dd><code>narrative retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Retrieval from incomplete and uncertain recollections</code></dd></div><div><dt>Primary metric</dt><dd><code>QueryMeanNDCG@10</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>narrative retrieval</span><span>search-swe</span></div>
       </header>
       <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
@@ -59,14 +59,14 @@
 <p>Compute nDCG@10 using complete original qrels, then average equally over 445 held-out questions.</p>
 <p>Four category means based on original human uncertainty annotations and a fixed median narrative length are diagnostics. They do not change query weights or introduce model-generated categories.</p>
 <h3 id="reward-mapping">Reward mapping</h3>
-<p>The final reward uses the raw quality described above, with fixed reference quality <code>b = 0.40178618363049623</code> and integer score anchor <code>a = 20</code> on the 0–100 scale:</p>
-<pre><code class="language-text">reward(q) = (a / 100) * q / b                             if 0 &lt;= q &lt;= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b &lt; q &lt;= 1</code></pre>
-<p>This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward precision; a displayed 0–100 score is rounded to one decimal place. Correctness and trajectory-audit gates take precedence over this conversion.</p>
+<p>For raw quality <code>Q</code>, use <code>b=0.40178618363049623</code> and <code>a=0.2</code>:</p>
+<pre><code class="language-text">reward = a * Q / b                         if Q &lt;= b
+         a + (1-a) * (Q-b) / (1-b)         if Q &gt; b</code></pre>
+<p>This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.</p>
 <h3 id="validity-and-failure-handling">Validity and failure handling</h3>
-<p>The verifier checks successful index construction, executable behavior, query coverage, IDs, duplicate handling, finite scores and stage limits. Completed valid JSONL rows remain usable after a query timeout; missing or invalid rows score zero. A non-timeout query-command failure invalidates that call. See <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/narrative-clue-search/instruction.md">instruction.md</a> and the verifier for the exact task-specific validity checks.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/narrative-clue-search/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/narrative-clue-search/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/narrative-clue-search/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>Build, query coverage, IDs, scores and stage limits must be valid. On a query-call timeout, completed valid rows still score; missing or invalid rows earn zero. Other query-command failures invalidate the call.</p>
+<p>A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/narrative-clue-search/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/narrative-clue-search/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/narrative-clue-search/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../memory-constrained-dense-retrieval/"><span>Previous task</span><strong>Memory-constrained Dense Retrieval</strong></a><a href="../negative-constraint-retrieval/"><span>Next task</span><strong>Negative-Constraint Retrieval</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

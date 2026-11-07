@@ -1,6 +1,6 @@
 # ChunQiu Temporal Retrieval
 
-Retrieve Classical Chinese annal records for reign dates and temporal constraints while distinguishing events from later commentary.
+Retrieve Classical Chinese annal records on **one GPU**, answering the full **775-query batch in 120 seconds**. Resolve reign dates and temporal conditions while separating historical events from later commentary. The supplied embedding model and examples support adaptation; reward is mean binary nDCG@10, so correctly dated records must also rank highly.
 
 * **Task name**: `search-swe/chunqiu-temporal-retrieval`
 * **Domain**: `Classical Chinese historical retrieval`
@@ -11,7 +11,7 @@ Retrieve Classical Chinese annal records for reign dates and temporal constraint
 ## Runtime and requirements
 
 * **Agent budget**: `6 hours`
-* **Compute**: `16` CPUs, `32 GiB` RAM, `100 GiB` storage; one A100 40 GB GPU
+* **Compute**: `16` CPUs, `32 GiB` RAM, `100 GiB` storage; one GPU
 * **Build limit**: `1,200 seconds`
 * **Query limit**: `120 seconds` for the entire evaluation batch
 
@@ -61,6 +61,8 @@ subtraction. The ideal ranking contains up to ten relevant documents.
 A timed-out or failed batch, malformed or missing output, or a failed mandatory
 trajectory compliance audit yields zero overall; there is no partial batch credit.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/chunqiu-temporal-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/chunqiu-temporal-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/chunqiu-temporal-retrieval/task.toml).
+The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.
+
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/chunqiu-temporal-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/chunqiu-temporal-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/chunqiu-temporal-retrieval/task.toml).

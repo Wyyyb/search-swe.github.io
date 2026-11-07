@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Answer questions from a person’s conversation history as it stood at a specified session." />
+  <meta name="description" content="Answer questions from conversation history using at most 350 retrieved records, CPU-only retrieval and 600 seconds per answer." />
   <meta name="theme-color" content="#ffffff" />
   <title>Evolving Personal Memory — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,8 +38,8 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>CPU</span><div class="task-name-control"><code>evolving-personal-memory</code><button type="button" class="copy-task-name" data-task-name="evolving-personal-memory" aria-label="Copy task name: evolving-personal-memory" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/evolving-personal-memory" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Evolving Personal Memory</h1>
-        <div class="task-summary"><p>Answer questions from a person’s conversation history as it stood at a specified session.</p></div>
-        <dl class="task-specs"><div><dt>Domain</dt><dd><code>conversation memory</code></dd></div><div><dt>Primary focus</dt><dd><code>Evolving Personal Memory</code></dd></div><div><dt>Primary metric</dt><dd><code>FAMA</code></dd></div></dl>
+        <div class="task-summary"><p>Answer questions from conversation history using <strong>at most 350 retrieved records</strong>, CPU-only retrieval and <strong>600 seconds per answer</strong>. Respect each person’s session cutoff, retain relevant facts and forget superseded ones; the answerer sees only retrieved text. Quality penalizes failures to forget as well as missing memories, with the reference quality mapped to 20/100.</p></div>
+        <dl class="task-specs"><div><dt>Domain</dt><dd><code>conversation memory</code></dd></div><div><dt>Primary focus</dt><dd><code>Time-aware recall and forgetting</code></dd></div><div><dt>Primary metric</dt><dd><code>Memory accuracy penalized for forgetting failures (FAMA)</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>conversation memory</span><span>search-swe</span></div>
       </header>
       <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#host-configuration" class="toc-subsection">Host configuration</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
@@ -58,18 +58,18 @@
 /app/answer.sh --input /path/to/request.json --output /path/to/answer.json</code></pre>
 <p>Search receives <code>query_id</code>, <code>persona_id</code>, <code>cutoff_session</code>, <code>question</code>; return exactly <code>query_id</code> and up to 350 unique <code>record_ids</code> belonging to that person and no later than the cutoff. The verifier supplies their complete original text to an isolated answer process. Return exactly <code>query_id</code> and a nonempty <code>answer</code>. Answer code may read only the current request, reusable code and its own scratch; it cannot access corpus, index, other requests or stored conversation facts. Build/search use the supplied writable index; all stages run unprivileged with read-only code.</p>
 <h2 id="evaluation">Evaluation</h2>
-<p>Three independent judge configurations vote on each deduplicated criterion. MPA measures passed memory criteria, FAA measures passed forgetting criteria, and lambda is the fraction of criteria that concern forgetting.</p>
+<p>Three independent judge configurations assess each deduplicated criterion. For each configuration, MPA measures passed memory criteria, FAA measures passed forgetting criteria, and lambda is the fraction of criteria that concern forgetting.</p>
 <pre><code class="language-text">FAMA = max(0, MPA - lambda * (1 - FAA))</code></pre>
-<p>Final quality is mean FAMA over 595 held-out questions. Retrieval IDs assemble the answer request and are not a separate retrieval-quality metric. Record IDs are not appended to judged answer text.</p>
+<p>Compute FAMA separately for each configuration and average the three FAMA values arithmetically for that answer. Final quality is the mean over 595 held-out questions; a failed or incomplete judge call invalidates the measurement. Retrieval IDs assemble the answer request and are not a separate retrieval-quality metric. Record IDs are not appended to judged answer text.</p>
 <h3 id="reward-mapping">Reward mapping</h3>
-<p>The final reward uses the raw quality described above, with fixed reference quality <code>b = 0.3712215103709065</code> and integer score anchor <code>a = 20</code> on the 0–100 scale:</p>
-<pre><code class="language-text">reward(q) = (a / 100) * q / b                             if 0 &lt;= q &lt;= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b &lt; q &lt;= 1</code></pre>
-<p>This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward precision; a displayed 0–100 score is rounded to one decimal place. Correctness and trajectory-audit gates take precedence over this conversion.</p>
+<p>For raw quality <code>Q</code>, use <code>b=0.3712215103709065</code> and <code>a=0.2</code>:</p>
+<pre><code class="language-text">reward = a * Q / b                         if Q &lt;= b
+         a + (1-a) * (Q-b) / (1-b)         if Q &gt; b</code></pre>
+<p>This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.</p>
 <h3 id="validity-and-failure-handling">Validity and failure handling</h3>
 <p>Executable behavior, eligible record IDs, answer format, query coverage and stage limits are checked. Build and search stop before answer execution. Each answer process tree and workspace are removed before its role is reused. Transport or malformed-response failures in trusted judging invalidate the measurement and must not be interpreted as model quality.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/evolving-personal-memory/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/evolving-personal-memory/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/evolving-personal-memory/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/evolving-personal-memory/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../code-context-retrieval/"><span>Previous task</span><strong>Code Context Retrieval</strong></a><a href="../filtered-ann-retrieval/"><span>Next task</span><strong>Filtered ANN Retrieval</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

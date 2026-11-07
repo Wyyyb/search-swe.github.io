@@ -1,6 +1,6 @@
 # Code Context Retrieval
 
-Find compact source-code regions that provide the context needed to understand an issue in its specified repository snapshot.
+Find an issue’s source-code context in **180 seconds on CPUs**, returning at most **five regions and 500 lines** from its repository snapshot. The test repositories differ from the public examples, and external issue or patch lookup is forbidden. Mean physical-line F1 rewards recovering the needed context while penalizing overly broad regions; no patch is required.
 
 * **Task name**: `search-swe/code-context-retrieval`
 * **Domain**: `repository source retrieval`
@@ -61,6 +61,6 @@ or a subjective relevance judge.
 Missing, malformed, failed or timed-out query results contribute zero for that
 query. Build or integrity failures prevent the submission from scoring.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-context-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-context-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/code-context-retrieval/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-context-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-context-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/code-context-retrieval/task.toml).

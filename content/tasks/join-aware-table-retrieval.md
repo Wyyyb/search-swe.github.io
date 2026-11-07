@@ -1,6 +1,6 @@
 # Join-aware Table Retrieval
 
-Retrieve the tables and column-level joins needed to answer a question from a catalog of relational schemas.
+Select **five tables and up to six joins** from 1,056 tables in **20 seconds per request**, with a CPU-only **8 GiB index**. Infer the right database and relationships from schemas and sparse sample rows. A question earns credit only if the candidates cover one complete acceptable join plan; partial plans earn nothing, and SQL execution is unavailable.
 
 * **Task name**: `search-swe/join-aware-table-retrieval`
 * **Domain**: `relational catalog search`
@@ -67,8 +67,8 @@ Reward is mean complete-plan coverage over ten questions. Invalid or late
 responses score zero for the affected question; the process can be restarted for
 later questions. Build failure or index-limit violations yield zero overall.
 A synthetic warmup is unscored; failure triggers restart rather than automatic
-loss of a scored question.
+loss of a scored question. A separate trajectory integrity audit must return a valid passing decision before the coverage reward is awarded. Missing or inconsistent audit output invalidates the measurement; a valid rejection yields zero.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/join-aware-table-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/join-aware-table-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/join-aware-table-retrieval/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/join-aware-table-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/join-aware-table-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/join-aware-table-retrieval/task.toml).

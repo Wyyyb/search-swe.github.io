@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Optimize candidate generation and postings pruning for opaque, unweighted sparse retrieval while preserving ranking quality." />
+  <meta name="description" content="Speed up sparse retrieval over one million documents using single-threaded Python on one CPU, preserving nDCG@10 ≥0.89 and Recall@100 ≥0.99." />
   <meta name="theme-color" content="#ffffff" />
   <title>Sparse Retrieval Pruning — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,7 +38,7 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>CPU</span><div class="task-name-control"><code>sparse-retrieval-pruning</code><button type="button" class="copy-task-name" data-task-name="sparse-retrieval-pruning" aria-label="Copy task name: sparse-retrieval-pruning" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/sparse-retrieval-pruning" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Sparse Retrieval Pruning</h1>
-        <div class="task-summary"><p>Optimize a Python-only sparse retrieval system over one million documents with opaque, unweighted term IDs. Preserve retrieval quality while reducing query latency against the unpruned reference starter.</p></div>
+        <div class="task-summary"><p>Speed up sparse retrieval over one million documents using <strong>single-threaded Python on one CPU</strong>, preserving <strong>nDCG@10 ≥0.89 and Recall@100 ≥0.99</strong>. Prune work without losing relevant results. After all five runs pass both quality gates, reward grows from zero at 4× reference speedup to full credit at 16×, using median complete search times.</p></div>
         <dl class="task-specs"><div><dt>Domain</dt><dd><code>learned sparse retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>sparse retrieval and postings pruning</code></dd></div><div><dt>Primary metric</dt><dd><code>Quality-gated linear speedup reward</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>sparse-retrieval</span><span>inverted-index</span><span>IDF</span><span>candidate-pruning</span></div>
       </header>
@@ -61,8 +61,8 @@
 <pre><code class="language-text">reward = max(0, min(1, (s - 4) / 12))</code></pre>
 <p>Fourfold speedup earns zero, tenfold earns 0.5, and sixteenfold or better earns one. Timing includes startup, imports, index/query loading, retrieval, output and exit. There is no warmup and OS caches are retained. Each invocation has fresh scratch; code and index are read-only, and answers cannot be reused across runs.</p>
 <p>Candidate/reference build limits are 3,600/1,800 seconds, each search has 900 seconds and the overall verifier has 16,200 seconds. Both systems share the same one-CPU, one-thread, 32 GiB policy. Quality/output validation applies to every round. Execution, resource or required audit failure gives zero; self-reported counters are diagnostic.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/sparse-retrieval-pruning/instruction.md">full instructions</a> for the current protocol.</p></div>
+<p>A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/sparse-retrieval-pruning/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/sparse-retrieval-pruning/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/sparse-retrieval-pruning/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../scientific-paper-qa/"><span>Previous task</span><strong>Scientific-Paper Question Answering</strong></a><a href="../visual-document-qa/"><span>Next task</span><strong>Visual-Document Question Answering</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

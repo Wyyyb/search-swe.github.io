@@ -1,10 +1,10 @@
 # Same-Place Image Search
 
-Find photographs of the same physical place despite changes in viewpoint, scale and occlusion.
+Find photos of the same physical place using frozen CLIP on **one GPU**, with geometric verification of at most **20 candidates per request**. Handle viewpoint changes, scale and occlusion among the source benchmark’s Hard positives. Quality is top-five nDCG averaged equally across Oxford and Paris; the reference quality maps to 15/100.
 
 * **Task name**: `search-swe/same-place-image-search`
 * **Domain**: `landmark retrieval`
-* **Primary focus**: `Same-Place Image Search`
+* **Primary focus**: `Place recognition under viewpoint changes`
 * **Primary metric**: `HardPlaceMacroNDCG@5`
 * **Tags**: `landmark retrieval`, `search-swe`
 
@@ -37,7 +37,7 @@ The completed index is read-only during retrieval.
 ## Evaluation
 
 Compute binary nDCG@5 against the original Hard positives after removing
-excluded images. Average within Oxford and Paris, then give the two sources
+excluded images. Original Easy and Junk images appear in `exclude_image_ids` and are not treated as negatives. Average within Oxford and Paris, then give the two sources
 equal weight.
 
 This task uses the source Hard relevance protocol with a task-specific top-five
@@ -45,31 +45,22 @@ metric. Invalid or excluded returned IDs invalidate that query.
 
 ### Reward mapping
 
-The final reward uses the raw quality described above, with fixed reference
-quality `b = 0.5364309790092764` and integer score anchor `a = 15` on the 0–100 scale:
+For raw quality `Q`, use `b=0.5364309790092764` and `a=0.15`:
 
 ```text
-reward(q) = (a / 100) * q / b                             if 0 <= q <= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b < q <= 1
+reward = a * Q / b                         if Q <= b
+         a + (1-a) * (Q-b) / (1-b)         if Q > b
 ```
 
-This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and
-auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward
-precision; a displayed 0–100 score is rounded to one decimal place.
-Correctness and trajectory-audit gates take precedence over this conversion.
+This maps quality 0, b and 1 to scores 0, 15 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.
 
 ### Validity and failure handling
 
-The verifier checks successful index construction, executable behavior,
-query coverage, IDs, duplicate handling, finite scores and stage limits.
-Completed valid JSONL rows remain usable after a query timeout; missing or
-invalid rows score zero. A non-timeout query-command failure invalidates
-that call. See [instruction.md](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/same-place-image-search/instruction.md) and the verifier for the exact
-task-specific validity checks.
+Build, query coverage, IDs, scores and stage limits must be valid. On a query-call timeout, completed valid rows still score; missing or invalid rows earn zero. Other query-command failures invalidate the call.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/same-place-image-search/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/same-place-image-search/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/same-place-image-search/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/same-place-image-search/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/same-place-image-search/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/same-place-image-search/task.toml)
 for the complete contract at the synchronized benchmark revision.

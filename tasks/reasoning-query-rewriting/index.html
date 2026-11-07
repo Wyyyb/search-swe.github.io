@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Build retrieval over a biology corpus by rewriting natural-language queries into precise search intent." />
+  <meta name="description" content="Retrieve three relevant biology documents across terminology and reasoning gaps, with 16 CPUs, no GPU and 900 seconds for ten queries." />
   <meta name="theme-color" content="#ffffff" />
   <title>Reasoning-intensive Query Rewriting — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,7 +38,7 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>CPU</span><div class="task-name-control"><code>reasoning-query-rewriting</code><button type="button" class="copy-task-name" data-task-name="reasoning-query-rewriting" aria-label="Copy task name: reasoning-query-rewriting" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/reasoning-query-rewriting" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Reasoning-intensive Query Rewriting</h1>
-        <div class="task-summary"><p>Build an executable retrieval system over a 57,359-document biology corpus. Match natural-language questions to relevant documents across terminology and reasoning gaps. Query rewriting, lexical or dense retrieval, and scoring or reranking supplied corpus candidates are permitted within the documented resource policy.</p></div>
+        <div class="task-summary"><p>Retrieve three relevant biology documents across terminology and reasoning gaps, with <strong>16 CPUs</strong>, no GPU and <strong>900 seconds for ten queries</strong>. Build over 57,359 documents using query rewriting, retrieval and reranking within the permitted API policy. Reward is the fraction of questions with at least one relevant document in the top three; rewriting itself receives no separate score.</p></div>
         <dl class="task-specs"><div><dt>Domain</dt><dd><code>biology</code></dd></div><div><dt>Primary focus</dt><dd><code>query rewriting</code></dd></div><div><dt>Primary metric</dt><dd><code>Accuracy@3</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>information-retrieval</span><span>query-rewriting</span><span>reasoning-intensive-retrieval</span></div>
       </header>
@@ -55,7 +55,7 @@
 <p>The submission must provide executable <code>build.sh</code> and <code>run.sh</code> entry points under <code>/app</code>.</p>
 <h2 id="evaluation">Evaluation</h2>
 <p>The verifier evaluates 10 hidden queries. A query is a hit when at least one relevant document appears in its top three results. Reward is the fraction of queries hit. Execution or output-validation failure, or a failed trajectory audit, sets the final reward to <code>0</code>.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/reasoning-query-rewriting/instruction.md">full instructions</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/reasoning-query-rewriting/task.toml">runtime configuration</a> for the complete contract at the reviewed benchmark revision.</p></div>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/reasoning-query-rewriting/instruction.md">full instructions</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/reasoning-query-rewriting/task.toml">runtime configuration</a> for the complete contract at the reviewed benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../paper-metadata-retrieval/"><span>Previous task</span><strong>Paper Metadata Retrieval</strong></a><a href="../rust-bm25-search/"><span>Next task</span><strong>Rust BM25 Search</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

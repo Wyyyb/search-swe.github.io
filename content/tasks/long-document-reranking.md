@@ -1,10 +1,10 @@
 # Long-document Reranking
 
-Improve a fixed reranking pipeline for NarrativeQA-style long documents. Each query comes with a frozen BM25 Top-100 candidate pool, and the task focuses on reranking those candidates when relevant evidence may occur beyond the first 512 model tokens.
+Rerank 100 fixed candidates per question using an unchanged local BGE model, **without a GPU**, in **3,600 seconds per 100-query batch**. Relevant evidence can lie beyond the model’s first 512 tokens, so improve window selection and aggregation within the CPU budget. Reward is top-five hit rate; a second batch checks continued service availability.
 
 * **Task name**: `search-swe/long-document-reranking`
 * **Domain**: `information retrieval`
-* **Primary focus**: `long-document reranking`
+* **Primary focus**: `Evidence selection beyond a model context window`
 * **Primary metric**: `Accuracy@5`
 * **Tags**: `search`, `reranking`, `cross-encoder`, `long-document`, `BM25`, `NarrativeQA`
 
@@ -41,6 +41,6 @@ The verifier invokes `run.sh` twice sequentially on the same complete query file
 
 Final reward equals `Accuracy@5` when evaluation is valid and the trajectory audit passes. Execution failures, invalid output, candidate-set or fixed-model violations, and failed trajectory audits receive a reward of `0`.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-document-reranking/instruction.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/long-document-reranking/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-document-reranking/instruction.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/long-document-reranking/task.toml)
 for the complete contract at the reviewed benchmark revision.

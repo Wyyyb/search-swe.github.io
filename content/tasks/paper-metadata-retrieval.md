@@ -1,10 +1,10 @@
 # Paper Metadata Retrieval
 
-Find the single paper satisfying both a substantive research need and its source-metadata constraints.
+Find the single matching paper among 70,000 records in **30 seconds on 16 CPUs**, without training or external search. Satisfy both the research need and metadata conditions: submission dates differ from publication dates, and institution location differs from citizenship. Reward is exact top-one accuracy; a plausible paper that violates a condition earns nothing.
 
 * **Task name**: `search-swe/paper-metadata-retrieval`
 * **Domain**: `constrained paper search`
-* **Primary focus**: `Paper Metadata Retrieval`
+* **Primary focus**: `Joint semantic and metadata filtering`
 * **Primary metric**: `Accuracy@1`
 * **Tags**: `constrained paper search`, `search-swe`
 
@@ -31,9 +31,9 @@ Return exactly one `doc_id`/finite numeric `score` item in `results`, preserving
 
 Reward is mean Accuracy@1 across all eight requests. Timeouts zero only their query; failed build, other command failure, invalid output or resource/integrity failure zeros the entire submission.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/paper-metadata-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/paper-metadata-retrieval/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/paper-metadata-retrieval/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/paper-metadata-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/paper-metadata-retrieval/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/paper-metadata-retrieval/task.toml)
 for the complete contract at the synchronized benchmark revision.

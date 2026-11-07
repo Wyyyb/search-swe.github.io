@@ -1,8 +1,6 @@
 # Rust BM25 Search
 
-Build a complete Rust inverted index and BM25 searcher from 8,841,823 raw
-MS MARCO Passage v1 documents. Reach a fixed Pyserini retrieval-quality floor,
-then improve the balance of quality, query time, and persisted index size.
+Implement a Rust BM25 engine over **8.84 million passages** using **4 CPUs, 16 GiB RAM and 64 GiB storage**, without an existing search engine. First match the pinned Pyserini quality floor, then improve the geometric balance of ranking quality, median query time and index size. Reference-equivalent performance earns 0.5 reward; falling below the quality floor earns zero.
 
 * **Task name**: `search-swe/rust-bm25-search`
 * **Domain**: `lexical passage retrieval`
@@ -21,44 +19,25 @@ then improve the balance of quality, query time, and persisted index size.
 * **Index-build limit**: `7,200 seconds`
 * **Query limit**: `120 seconds` per request, including process startup for cold queries
 * **Batch limits**: `3,600 seconds` each for warmup and the measured query batch
-* **Verifier budget**: `18,000 seconds` overall
+* **Verifier budget**: `93,600 seconds` overall
 
-Implement the dictionary, postings, term frequencies, document lengths,
-serialization, BM25 scoring, and retrieval in Rust. Generic crates for text
-analysis, compression, parallelism, and I/O are allowed. Existing search
-engines, wrappers around them, prebuilt indexes, neural retrieval, external
-data, and query-specific answer tables are prohibited. BM25 parameters and
-text analysis may be tuned.
+Implement indexing, serialization, BM25 scoring and retrieval in Rust. Tune BM25 and text analysis using generic offline crates; search-engine libraries, prebuilt indexes, neural retrieval and external data are prohibited.
 
-The memory cap includes child processes and page cache. The verifier requires
-Linux Landlock ABI 1 or newer and seccomp filters. Candidate commands run
-without grading privileges; persistent IPC, kernel keyrings, extended-attribute
-operations, and io_uring are blocked. During search, only the executable,
-immutable index, and required system libraries are readable.
+Memory includes child processes and page cache. Verification requires Landlock ABI 1+ and seccomp; search runs unprivileged with access only to the executable, immutable index and required system libraries.
 
 ## Public input and output contract
 
 ### Inputs
 
-* `/task/data/corpus.jsonl.gz` — all 8,841,823 passages as gzip JSONL with `docid`, `text`, and additional `title` metadata. Index only `text`; document IDs are decimal strings from `0` through `8841822`.
-* `/task/data/warmup.jsonl.gz` — 54 public DL20 queries with `query_id` and `query` fields. These are disjoint from the evaluation queries and are not a scored development subset.
-* `/app/submission` — a Rust source scaffold with pinned Cargo files; retrieval is deliberately unimplemented.
-* `/task/docs` — toolchain and environment documentation. An optional three-passage smoke check is available at `/task/smoke.py`; it does not estimate full evaluation quality.
+* `/task/data/corpus.jsonl.gz` — 8,841,823 passages with `docid`, `text` and `title`. Index only `text`; IDs are decimal strings from `0` through `8841822`.
+* `/task/data/warmup.jsonl.gz` — 54 unscored DL20 queries, disjoint from evaluation.
+* `/app/submission` — an unimplemented Rust scaffold with pinned Cargo files.
 
-MS MARCO dataset terms apply. Evaluation queries and judgments are not supplied
-to the agent.
+Evaluation queries and judgments are withheld. MS MARCO dataset terms apply; `/task/docs` describes the environment.
 
 ### Outputs
 
-Submit source under `/app/submission`: `Cargo.toml`, `Cargo.lock`, `src/main.rs`,
-other `.rs` files under `src/`, and optionally `README.md`. Use `bm25-search` as
-both package and executable name. The source limit is 1,000 regular files,
-10 MiB total, and ten directory levels. Exclude links, workspaces, custom build
-scripts, Cargo overrides, vendored dependencies, binaries, indexes, and generated
-data. Keep compiler outputs elsewhere with `CARGO_TARGET_DIR=/app/build`.
-
-Only the source directory transfers to the verifier. It recompiles the source,
-then builds a fresh index in an empty directory:
+Submit `Cargo.toml`, `Cargo.lock` and Rust source under `/app/submission`, limited to 1,000 regular files and 10 MiB. Only source transfers: no binaries, indexes, vendored dependencies or custom build scripts. The verifier recompiles and builds a fresh index:
 
 ~~~bash
 cargo build --release --offline --locked --bin bm25-search -j 4
@@ -66,46 +45,23 @@ bm25-search index --corpus /task/data/corpus.jsonl.gz --index /work/index --thre
 bm25-search search --index /work/index --threads 4
 ~~~
 
-The compiled binary may occupy at most 100 MiB. All persistent retrieval state
-must be in the index, limited to 16 GiB of logical file bytes including metadata.
-The index may contain no links, special files, or extended attributes and becomes
-read-only before search. The working area is limited to 64 GiB and 100,000 entries.
+The binary is limited to 100 MiB and the read-only index to 16 GiB of logical file bytes, including metadata. All persistent retrieval state must be in the index.
 
-The search command is a persistent stdin/stdout JSONL process. For each request:
-
-~~~json
-{"query_id":"example","text":"example query"}
-~~~
-
-Emit exactly one matching response, followed by a newline and a flush:
+Search is a persistent JSONL process. For each `{"query_id":"example","text":"example query"}` request, flush one response:
 
 ~~~json
 {"query_id":"example","results":[{"doc_id":"42","score":1.2}]}
 ~~~
 
-Return zero to ten unique valid IDs with finite scores in descending order and
-deterministic ties. Requests are limited to 4,096 UTF-8 bytes; responses including
-the newline to 65,536 bytes. Send diagnostics to stderr, emit no startup message
-on stdout, and exit within five seconds of stdin EOF. Sampled cold and warm
-responses must match exactly, including scores.
+Return up to ten unique IDs with finite descending scores and deterministic ties. Request/response limits are 4,096/65,536 bytes. Send diagnostics only to stderr, emit no startup message, and exit within five seconds of EOF. Sampled cold and warm responses must match exactly, including scores.
 
 ## Evaluation
 
-The verifier evaluates all 6,980 standard passage development queries, withheld
-from the agent. MRR@10 is the average reciprocal rank of each query's first
-positively judged result in the top ten, with zero for no hit. Every query must
-receive a valid response.
+Evaluate 6,980 held-out queries. MRR@10 averages the reciprocal rank of the first relevant top-ten result, with zero for no hit. Every query requires a valid response.
 
-The quality reference is Pyserini 1.4.0 with BM25 `k1=0.9`, `b=0.4`, its default
-English analyzer, and text-only indexing without stored raw text, positions, or
-document vectors. The exact MRR@10 floor is `3236243/17589600` (approximately
-`0.18398616227770956`); it must not be rounded to `0.18` or `0.1840`.
+The reference is Pyserini 1.4.0, BM25 `k1=0.9`, `b=0.4`, default English analysis and text-only indexing without stored text, positions or vectors. Its exact MRR@10 floor is `3236243/17589600`; do not round it.
 
-A fresh process first runs the 54 warmup queries, then answers all evaluation
-queries with one request outstanding. The verifier measures total batch wall time and all logical
-index-file bytes. It rebuilds and measures the pinned reference in the same run.
-Let `M`, `T`, and `D` denote candidate MRR@10, warm batch seconds, and index bytes,
-with corresponding reference values `Mref`, `Tref`, and `Dref`:
+Build each index once, then run five fresh-process batches per system, each after 54 warmup queries, with one request outstanding. Rankings must agree across repeats. Let `M`, `T`, `D` be candidate MRR@10, median batch seconds and index bytes; `Mref`, `Tref`, `Dref` are the reference values:
 
 ~~~text
 M >= Mref = 3236243/17589600
@@ -113,17 +69,7 @@ U = ((M/Mref) * (Tref/T) * (Dref/D))^(1/3)
 reward = U / (1 + U)
 ~~~
 
-Quality, time, and disk have equal weights. Reference-equivalent metrics earn
-`0.5`; improvements earn credit only after all quality and resource gates pass.
-Missing, invalid, timed-out, over-budget, or below-reference submissions receive
-`0`. Reference or environment failures invalidate the run rather than measure
-the candidate's ability.
+Quality, time and disk have equal weights. Invalid, timed-out, over-budget or below-floor submissions receive zero; reference/environment failures invalidate the measurement. Startup latency, latency percentiles, QPS, build time and process RSS are diagnostics, not extra reward terms. OS file caches are retained.
 
-Five fresh-process startup samples, warm latency percentiles, sequential QPS,
-build time, and sampled search-process RSS are reported as diagnostics. They
-receive no separate bonus. Startup measurements do not evict the OS file cache;
-RSS excludes children and unmapped page cache, unlike the container memory cap.
-QPS reflects concurrency-one throughput.
-
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/rust-bm25-search/instruction.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/rust-bm25-search/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/rust-bm25-search/instruction.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/rust-bm25-search/task.toml).

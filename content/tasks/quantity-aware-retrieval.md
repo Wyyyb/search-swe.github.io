@@ -1,6 +1,6 @@
 # Quantity-aware Retrieval
 
-Retrieve clinical passages that satisfy numerical conditions, using supplied examples and a local embedding model.
+Rank clinical passages satisfying numerical conditions in **five seconds per query on one GPU**, using the supplied model and examples. Resolve quantities, units and inequalities across 153,252 passages; the training examples are edited text, not corpus-ID labels. Reward is mean nDCG@10 improvement above 0.1847, normalized so perfect retrieval earns full credit.
 
 * **Task name**: `search-swe/quantity-aware-retrieval`
 * **Domain**: `clinical passage retrieval`
@@ -11,7 +11,7 @@ Retrieve clinical passages that satisfy numerical conditions, using supplied exa
 ## Runtime and requirements
 
 * **Agent budget**: `6 hours`
-* **Compute**: `16` CPUs, `32 GiB` RAM, `100 GiB` storage; one A100 40 GB GPU
+* **Compute**: `16` CPUs, `32 GiB` RAM, `100 GiB` storage; one GPU
 * **Build limit**: `1,200 seconds`
 * **Query limit**: `5 seconds` per question, evaluated sequentially
 
@@ -68,6 +68,6 @@ A timed-out question contributes zero without leaving the denominator. Other
 execution/output failures, failed build, integrity violations or a failed
 mandatory trajectory audit set the overall reward to zero.
 
-The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/quantity-aware-retrieval/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/quantity-aware-retrieval/README.md),
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/quantity-aware-retrieval/task.toml).
+The full contract is in the benchmark's [task instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/quantity-aware-retrieval/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/quantity-aware-retrieval/README.md),
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/quantity-aware-retrieval/task.toml).

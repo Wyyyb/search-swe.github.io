@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Retrieve court documents that support or refute a claim according to the stance requested by the query." />
+  <meta name="description" content="Rank court documents supporting or refuting a requested claim, processing 311 queries in 20 seconds on one GPU." />
   <meta name="theme-color" content="#ffffff" />
   <title>Legal Stance Retrieval — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,7 +38,7 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>GPU</span><div class="task-name-control"><code>legal-stance-retrieval</code><button type="button" class="copy-task-name" data-task-name="legal-stance-retrieval" aria-label="Copy task name: legal-stance-retrieval" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/legal-stance-retrieval" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Legal Stance Retrieval</h1>
-        <div class="task-summary"><p>Retrieve court documents that support or refute a claim according to the stance requested by the query.</p></div>
+        <div class="task-summary"><p>Rank court documents supporting or refuting a requested claim, processing <strong>311 queries in 20 seconds on one GPU</strong>. Match the requested stance rather than topic alone. The median of all five fresh rounds, with failures ordered last, supplies the rankings; only nDCG@10 above the frozen baseline earns reward.</p></div>
         <dl class="task-specs"><div><dt>Domain</dt><dd><code>legal document retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Claim relevance and stance matching</code></dd></div><div><dt>Primary metric</dt><dd><code>Baseline-normalized mean NDCG@10</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>stance-aware retrieval</span><span>search-swe</span></div>
       </header>
@@ -58,12 +58,12 @@
 <pre><code class="language-json">{&quot;query_id&quot;:&quot;example&quot;,&quot;results&quot;:[{&quot;doc_id&quot;:&quot;document-id&quot;,&quot;score&quot;:0.123}]}</code></pre>
 <p>Each actual result list must contain exactly ten distinct known document IDs, with finite scores in nonincreasing order. Equal scores may use any order; array position determines rank. Produce one result for every query.</p>
 <h2 id="evaluation">Evaluation</h2>
-<p>Compute binary document-level NDCG@10 for each question, then take their mean <code>Q</code>. Normalize only after averaging, using the exact reference:</p>
+<p>Run five rounds in the same query order, rebuilding from an empty index and restarting services each time. Select the median-time batch, ordering failed, late or invalid batches last and breaking ties by round order. Compute binary document-level NDCG@10 for each question in that batch, then take their mean <code>Q</code>. Normalize only after averaging, using the exact reference:</p>
 <pre><code class="language-text">B = 0.5610484855098774
 reward = clamp((Q - B) / (1 - B), 0, 1)</code></pre>
 <p>The reference must not be rounded. Relevance uses the supplied stance judgments; the pooled labels are not an exhaustive account of all potentially useful documents.</p>
-<p>Failed execution, invalid output, batch timeout or a failed mandatory trajectory compliance audit yields zero overall. There is no partial batch credit.</p>
-<p>The full contract is in the benchmark&#x27;s <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/legal-stance-retrieval/instruction.md">task instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/legal-stance-retrieval/README.md">task documentation</a>, and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/legal-stance-retrieval/task.toml">runtime configuration</a>.</p></div>
+<p>Any failed build, fewer than three successful batches, or a failed mandatory trajectory compliance audit yields zero overall. No partial batch receives credit. Each build retains its 3,600-second limit, each batch 20 seconds, and the overall verifier allows 20,100 seconds. The single audit must have complete, consistent decisions; missing or inconsistent audit output invalidates the measurement.</p>
+<p>The full contract is in the benchmark&#x27;s <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/legal-stance-retrieval/instruction.md">task instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/legal-stance-retrieval/README.md">task documentation</a>, and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/legal-stance-retrieval/task.toml">runtime configuration</a>.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../layout-page-search/"><span>Previous task</span><strong>Layout Page Search</strong></a><a href="../lightweight-query-retrieval/"><span>Next task</span><strong>Lightweight Query Retrieval</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

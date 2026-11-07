@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Find gallery photographs matching a reference image plus a requested change." />
+  <meta name="description" content="Retrieve photographs matching an image plus a requested change, using one GPU and at most 100 additional candidate-image inspections per request." />
   <meta name="theme-color" content="#ffffff" />
   <title>Composed Image Search — Search-SWE</title>
   <link rel="icon" type="image/png" href="../../assets/logo.png" />
@@ -38,8 +38,8 @@
       <header id="overview" class="task-article-header">
         <div class="task-article-kicker"><span>GPU</span><div class="task-name-control"><code>composed-image-search</code><button type="button" class="copy-task-name" data-task-name="composed-image-search" aria-label="Copy task name: composed-image-search" hidden>Copy</button><span class="copy-status sr-only" role="status"></span></div><a href="https://github.com/VectorSpaceLab/Search-SWE/tree/main/tasks/composed-image-search" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></div>
         <h1>Composed Image Search</h1>
-        <div class="task-summary"><p>Find gallery photographs matching a reference image plus a requested change.</p></div>
-        <dl class="task-specs"><div><dt>Domain</dt><dd><code>composed image retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Composed Image Search</code></dd></div><div><dt>Primary metric</dt><dd><code>ComposedSourceQuality</code></dd></div></dl>
+        <div class="task-summary"><p>Retrieve photographs matching an image plus a requested change, using <strong>one GPU</strong> and at most <strong>100 additional candidate-image inspections per request</strong>. Preserve the reference image’s relevant content while applying the modification. Quality combines CIRCO average precision and CIRR recall with equal source weight; the reference quality maps to 20/100 and perfect quality to 100.</p></div>
+        <dl class="task-specs"><div><dt>Domain</dt><dd><code>composed image retrieval</code></dd></div><div><dt>Primary focus</dt><dd><code>Reference-image and modification-text composition</code></dd></div><div><dt>Primary metric</dt><dd><code>Equal-source mean of CIRCO average precision and CIRR recall</code></dd></div></dl>
         <div class="task-tags" aria-label="Task topics"><span>composed image retrieval</span><span>search-swe</span></div>
       </header>
       <details class="task-mobile-toc"><summary>On this page</summary><nav aria-label="Page contents"><a href="#overview">Overview</a><a href="#runtime-and-requirements">Runtime and requirements</a><a href="#public-input-and-output-contract">Public input and output contract</a><a href="#inputs" class="toc-subsection">Inputs</a><a href="#outputs" class="toc-subsection">Outputs</a><a href="#evaluation">Evaluation</a><a href="#reward-mapping" class="toc-subsection">Reward mapping</a><a href="#validity-and-failure-handling" class="toc-subsection">Validity and failure handling</a></nav></details>
@@ -59,14 +59,14 @@
 <p>For CIRCO, quality is the mean of AP@5, AP@10, AP@25 and AP@50. For CIRR, it is the mean of Recall@1, Recall@5, Recall@10 and Recall@50. Queries are averaged within each source, then the two source scores receive equal weight.</p>
 <p>The source metrics retain their original positive labels. The shared gallery and equal weighting of the two sources are this task&#x27;s adaptation; unlabeled alternatives are not treated as newly certified negatives.</p>
 <h3 id="reward-mapping">Reward mapping</h3>
-<p>The final reward uses the raw quality described above, with fixed reference quality <code>b = 0.26812065144613684</code> and integer score anchor <code>a = 20</code> on the 0–100 scale:</p>
-<pre><code class="language-text">reward(q) = (a / 100) * q / b                             if 0 &lt;= q &lt;= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b &lt; q &lt;= 1</code></pre>
-<p>This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward precision; a displayed 0–100 score is rounded to one decimal place. Correctness and trajectory-audit gates take precedence over this conversion.</p>
+<p>For raw quality <code>Q</code>, use <code>b=0.26812065144613684</code> and <code>a=0.2</code>:</p>
+<pre><code class="language-text">reward = a * Q / b                         if Q &lt;= b
+         a + (1-a) * (Q-b) / (1-b)         if Q &gt; b</code></pre>
+<p>This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.</p>
 <h3 id="validity-and-failure-handling">Validity and failure handling</h3>
-<p>The verifier checks successful index construction, executable behavior, query coverage, IDs, duplicate handling, finite scores and stage limits. Completed valid JSONL rows remain usable after a query timeout; missing or invalid rows score zero. A non-timeout query-command failure invalidates that call. See <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/composed-image-search/instruction.md">instruction.md</a> and the verifier for the exact task-specific validity checks.</p>
-<p>Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.</p>
-<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/composed-image-search/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/composed-image-search/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/composed-image-search/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
+<p>Build, query coverage, IDs, scores and stage limits must be valid. On a query-call timeout, completed valid rows still score; missing or invalid rows earn zero. Other query-command failures invalidate the call.</p>
+<p>The integrity audit runs independently three times. Its reported value is the mean of the three binary decisions; all three must accept for a positive task reward. Missing, failed or malformed audit evidence invalidates the measurement.</p>
+<p>See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/composed-image-search/instruction.md">full instructions</a>, <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/composed-image-search/README.md">task documentation</a> and <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/composed-image-search/task.toml">runtime configuration</a> for the complete contract at the synchronized benchmark revision.</p></div>
       <nav class="task-adjacent" aria-label="Adjacent tasks"><a href="../code-reranker-finetuning/"><span>Previous task</span><strong>Code Reranker Fine-tuning</strong></a><a href="../constrained-molecular-search/"><span>Next task</span><strong>Constrained Molecular Search</strong></a></nav>
       <footer class="home-footer">
   <span>Search-SWE · VectorSpaceLab</span>

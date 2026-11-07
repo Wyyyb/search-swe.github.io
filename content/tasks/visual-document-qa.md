@@ -1,11 +1,11 @@
 # Visual-Document Question Answering
 
-Answer questions from long documents containing text, charts and tables, including unanswerable requests.
+Answer questions from long PDFs, charts and tables **without a GPU**, with **10,800 seconds per batch of up to 1,250 requests**. Use permitted APIs to reason across pages, handle numbers and recognize unanswerable questions. Quality averages three answer judgments with equal source weight; the reference maps to 20/100. Supporting pages are required output, but citation overlap is diagnostic.
 
 * **Task name**: `search-swe/visual-document-qa`
 * **Domain**: `visual document QA`
-* **Primary focus**: `Visual-Document Question Answering`
-* **Primary metric**: `SourceMacroAnswerAccuracy`
+* **Primary focus**: `Cross-page reasoning and answerability`
+* **Primary metric**: `Answer accuracy, equally weighted across sources`
 * **Tags**: `visual document QA`, `search-swe`
 
 ## Runtime and requirements
@@ -18,7 +18,7 @@ Build: 14,400 seconds. Up to 2,500 requests in two calls of at most 1,250, each 
 ### Host configuration
 
 Set `VERIFIER_OPENAI_API_KEY` to an OpenRouter key allowing
-`deepseek/deepseek-v4.1-flash` for trajectory auditing and `google/gemini-2.5-flash`
+`deepseek/deepseek-v4.1-flash` for trajectory auditing and `deepseek/deepseek-v4.1-flash-1017`
 for the fixed document-answer judge. Configure submission services separately
 using the [submission-key guide](https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/submission-models.md).
 
@@ -37,7 +37,7 @@ Submit executable `/app/build.sh` and `/app/run.sh` and all supporting files und
 /app/run.sh --index-dir /work/index --queries /path/to/queries.jsonl --output /path/to/results.jsonl
 ~~~
 
-Return `query_id`, an `answer` string and supporting 1-based `pages`. Give the final answer and units directly; say when information is absent, using an empty page list when no evidence exists.
+Return `query_id`, a nonempty `answer` string and supporting `pages`: distinct integers from 1 through the document’s `page_count`. Invalid page lists invalidate that query’s output. Give the final answer and units directly; say when information is absent, using an empty page list when no evidence exists.
 
 The index remains writable across repeated query calls.
 
@@ -49,28 +49,22 @@ binary semantic judgment of the question, reference and full submitted answer.
 Equivalent wording receives credit; incorrect entities or comparisons, missing
 list items and unsupported claims do not. Each semantic judgment records a reason.
 FinRAGBench-V retains its original binary answer judge. Trusted model calls use
-`google/gemini-2.5-flash` through OpenRouter.
+`deepseek/deepseek-v4.1-flash-1017` through OpenRouter.
 
-Average answers within each source, then give the two sources equal weight.
+Hold each submitted answer fixed and run its source-specific evaluation three times, including LLM extraction for numeric answers. Apply the numeric comparator to each extraction and average the three decisions arithmetically; semantic and FinRAG judgments use the same averaging. Then average answers within each source and give the two sources equal weight. Any failed trusted call invalidates the measurement. The overall verifier allows 59,400 seconds.
 
-Evidence-page precision, recall and F1 are diagnostics, not part of the primary
-answer score. Out-of-range source page references are excluded only from citation
-diagnostics and do not remove the corresponding answer question.
+Evidence-page precision, recall and F1 are computed once as diagnostics, not part of the primary answer score. Page-list validity remains an output requirement.
 
 ### Reward mapping
 
-The final reward uses the raw quality described above, with fixed reference
-quality `b = 0.4350989780543772` and integer score anchor `a = 20` on the 0–100 scale:
+For raw quality `Q`, use `b=0.4350989780543772` and `a=0.2`:
 
 ```text
-reward(q) = (a / 100) * q / b                             if 0 <= q <= b
-            a / 100 + (1 - a / 100) * (q - b) / (1 - b)  if b < q <= 1
+reward = a * Q / b                         if Q <= b
+         a + (1-a) * (Q-b) / (1-b)         if Q > b
 ```
 
-This maps raw quality 0, b and 1 to rewards 0, a / 100 and 1. Raw quality and
-auxiliary diagnostics are reported separately. Harbor retains the 0–1 reward
-precision; a displayed 0–100 score is rounded to one decimal place.
-Correctness and trajectory-audit gates take precedence over this conversion.
+This maps quality 0, b and 1 to scores 0, 20 and 100. The reference is a positive-score milestone, not a minimum quality gate. Validity and audit requirements still apply; diagnostics do not change the reward.
 
 ### Validity and failure handling
 
@@ -80,9 +74,9 @@ rows receive zero. Other query-command failures invalidate that call.
 Trusted answer-extraction or judge transport failures invalidate the measurement
 rather than establishing a low baseline or model score.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/visual-document-qa/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/visual-document-qa/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/visual-document-qa/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/visual-document-qa/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/visual-document-qa/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/visual-document-qa/task.toml)
 for the complete contract at the synchronized benchmark revision.

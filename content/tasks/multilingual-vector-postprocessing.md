@@ -1,11 +1,11 @@
 # Multilingual Vector Postprocessing
 
-Improve cross-language retrieval by applying one frozen language-aware function to existing vectors.
+Improve cross-language retrieval using only a frozen transform of existing vectors, with **16 GiB RAM**, one GPU and **0.5-second median queries**. Apply the same language-aware function to documents and queries while preserving 1,024 dimensions. Reward is macro nDCG@20 improvement above the frozen baseline; perfect quality is required for full credit, and all learning must finish before verification.
 
 * **Task name**: `search-swe/multilingual-vector-postprocessing`
 * **Domain**: `multilingual vector transforms`
-* **Primary focus**: `Multilingual Vector Postprocessing`
-* **Primary metric**: `clip((Q-B)/(U-B),0,1), with B and U frozen before agent evaluation`
+* **Primary focus**: `Shared language-aware vector transformation`
+* **Primary metric**: `Baseline-normalized macro nDCG@20`
 * **Tags**: `multilingual vector transforms`, `search-swe`
 
 ## Runtime and requirements
@@ -13,7 +13,7 @@ Improve cross-language retrieval by applying one frozen language-aware function 
 * **Agent budget**: `6 hours`
 * **Compute**: `16` CPUs, `16 GiB` RAM, `100 GiB` storage; `1` GPU(s)
 
-Offline A100 40 GB. Preparation: 1,800 seconds; each complete query operation: 0.5 seconds. All learning/statistics must finish during development. Maintain 1,024 dimensions and apply the same function to documents and queries, independent of batch/order/history.
+Offline, one GPU. Five independent rounds each allow 1,800 seconds for preparation with fresh workers, caches and temporary storage; each complete query operation has a 0.5-second median limit across those rounds. Score the ranking from the median-time sample; failed attempts stay in the sample set. All learning/statistics must finish during development. Maintain 1,024 dimensions and apply the same function to documents and queries, independent of batch/order/history.
 
 ## Public input and output contract
 
@@ -27,11 +27,11 @@ Submit `/app/submission/transform.py`, frozen weights and dependencies. Implemen
 
 ## Evaluation
 
-Evaluate 7,170 Belebele and 5,832 XQuAD held-out queries. Binary nDCG@20 averages queries within language, languages within dataset and both datasets equally. With `B=0.9127469497437668`, `U=0.9353486724891793`, reward is `clip((Q-B)/(U-B),0,1)`. U is the fixed quality reference from the original task calibration, not a claim that it was recalibrated under the new 16 GiB memory cap. Query errors/timeouts zero that query; preparation, resource, frozen-function or integrity violations zero the task. Extra speed gives no bonus.
+Evaluate 7,170 Belebele and 5,832 XQuAD held-out queries. Binary nDCG@20 averages queries within language, languages within dataset and both datasets equally. With `B=0.9127469497437668`, reward is `clip((Q-B)/(1-B),0,1)`. Matching the frozen baseline earns zero; full credit requires Q=1. Query errors/timeouts zero that query; preparation, resource, frozen-function or integrity violations zero the task. Extra speed gives no bonus.
 
-Final reward requires a healthy, accepting independent trajectory and submission integrity audit. Audit failures are reported separately from retrieval quality and cannot produce positive credit.
+A separate integrity audit must accept the trajectory and submission. Audit-service failures invalidate the measurement; a valid rejection gives zero reward.
 
-See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/multilingual-vector-postprocessing/instruction.md),
-[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/multilingual-vector-postprocessing/README.md)
-and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ba636fc1e553420af3a0ac15c4cfe2ad00f94baa/tasks/multilingual-vector-postprocessing/task.toml)
+See the [full instructions](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/multilingual-vector-postprocessing/instruction.md),
+[task documentation](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/multilingual-vector-postprocessing/README.md)
+and [runtime configuration](https://github.com/VectorSpaceLab/Search-SWE/blob/ed7544f4aeb1fe8a072edc77ece1f2f4a742bfda/tasks/multilingual-vector-postprocessing/task.toml)
 for the complete contract at the synchronized benchmark revision.
