@@ -78,8 +78,8 @@
               <h3>Choose your setting and tasks</h3>
               <pre><code>search-swe run</code></pre>
               <p>The wizard finds your checkout or helps you clone one to <code>~/Search-SWE</code> or a custom path, then remembers its location.</p>
-              <p>Choose your agent, provider, model and reasoning effort, enter missing keys, then select tasks and configure their services. Codex, Claude Code and Pi support integrated OpenRouter and direct routes.</p>
-              <p>Harbor’s registered agents are also available with <code>--provider native</code>, including Gemini CLI, Antigravity, OpenCode and OpenHands. Run <code>search-swe agents</code> to discover agents and their trajectory support, or <code>search-swe agents --agent NAME --json</code> for native settings. See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/agents.md#harbor-native-agents" target="_blank" rel="noreferrer">native agent guide</a> for credentials and <code>--agent-config</code>.</p>
+              <p>Choose your agent, provider, model and reasoning effort, enter missing keys, then select tasks and configure their services. Codex, Claude Code and Pi support integrated OpenRouter and direct routes, or <code>--provider native</code> for their Harbor adapters.</p>
+              <p>Other registered Harbor agents, including Gemini CLI, Antigravity, OpenCode and OpenHands, use native mode. Run <code>search-swe agents</code> to discover agents and their trajectory support, or <code>search-swe agents --agent NAME --json</code> for routes, versions and native settings. See the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/agents.md#harbor-native-agents" target="_blank" rel="noreferrer">native agent guide</a> for credentials and <code>--agent-config</code>.</p>
               <p class="evaluation-hint"><strong>Default setting:</strong> Codex + OpenRouter + GPT-6 Luna (max).</p>
               <p class="evaluation-hint">See <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/agents.md" target="_blank" rel="noreferrer">supported agents and providers</a>. For Pi, <code>search-swe pi-models</code> lists providers and their model counts; add <code>--provider NAME</code> for exact model IDs.</p>
             </div>
@@ -115,11 +115,15 @@ search-swe configure</code></pre>
           </li>
           <li>
             <div>
-              <h3>Add the evaluation skill</h3>
+              <h3>Install or update the evaluation skill</h3>
               <p>Run this in your agent’s workspace, then reload its skills or start a new session:</p>
               <pre><code>npx skills add VectorSpaceLab/Search-SWE --skill run-searchswe-evaluation -a codex</code></pre>
               <p class="evaluation-hint">Requires Node.js 22.20+. The example uses Codex; replace <code>codex</code> with your supported agent, such as <code>claude-code</code>.</p>
               <p class="evaluation-hint">For other installers and setup options, see the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/quickstart.md#skill-installation-options" target="_blank" rel="noreferrer">installation guide</a>.</p>
+              <p class="evaluation-hint">For an existing project installation, run these in the same workspace, then reload skills or start a new session:</p>
+              <pre><code>npx skills check -p
+npx skills update run-searchswe-evaluation -p</code></pre>
+              <p class="evaluation-hint">Use <code>-g</code> for a global installation. The skill, Python package and task checkout update separately; see the <a href="https://github.com/VectorSpaceLab/Search-SWE/blob/main/docs/evaluation/quickstart.md#update-the-skill" target="_blank" rel="noreferrer">skill update guide</a> for release alignment and local-path installations.</p>
             </div>
           </li>
           <li>
