@@ -1,32 +1,50 @@
 {
   "schema": 1,
-  "as_of": "2026-11-01",
+  "as_of": "2026-11-09",
   "currency": "USD",
   "unit": "USD per million tokens",
-  "policy": "Standard real-time API list prices; fixed DeepSeek off-peak rates for all requests, Xiaomi overseas USD rates. No time-of-day switching, batch, account, or regional adjustments.",
+  "policy": "Standard real-time USD API list prices with 30-minute cache writes. Long-context rates apply per request above 272,000 input tokens. No batch, fast-mode, account or regional adjustments.",
   "scope": "Selected coding agent model requests only; excludes verifier, task-internal APIs, infrastructure and unrelated runs. Recorded cache reads and writes are subsets of input. Reasoning is already included in output.",
   "models": {
     "openai/gpt-6-luna": {
       "official_model": "gpt-6-luna",
       "source": "https://developers.openai.com/api/docs/models/gpt-6-luna",
-      "rates": {"input": "0.10", "cached_input": "0.01", "cache_write_input": "0.125", "output": "0.50"},
+      "rates": {
+        "input": "0.10",
+        "cached_input": "0.01",
+        "cache_write_input": "0.125",
+        "output": "0.50"
+      },
       "long_context": {
         "above_input_tokens": 272000,
-        "rates": {"input": "0.20", "cached_input": "0.02", "cache_write_input": "0.25", "output": "0.75"}
+        "rates": {
+          "input": "0.20",
+          "cached_input": "0.02",
+          "cache_write_input": "0.25",
+          "output": "0.75"
+        }
       },
       "note": "Standard processing. Prompts above 272,000 input tokens use long-context rates for the entire request. Cache writes use the standard automatic-cache write rate."
     },
-    "deepseek/deepseek-v4.1-flash-1017": {
-      "official_model": "deepseek-flash (DeepSeek-V4.1-Flash-1017)",
-      "source": "https://api-docs.deepseek.com/quick_start/pricing/",
-      "rates": {"input": "0.15", "cached_input": "0.003", "cache_write_input": "0.15", "output": "0.60"},
-      "note": "Fixed official off-peak rates for every request, independent of run time. Cache misses, including writes, are charged at the input rate without a separate write surcharge."
-    },
-    "xiaomi/mimo-v2.6-flash": {
-      "official_model": "mimo-v2.6-flash",
-      "source": "https://mimo.mi.com/docs/en-US/price/pay-as-you-go",
-      "rates": {"input": "0.14", "cached_input": "0.0028", "cache_write_input": "0.14", "output": "0.28"},
-      "note": "Overseas real-time API prices in USD. Cache writes have no additional charge; their input processing is charged at the cache-miss rate."
+    "openai/gpt-6.1-terra": {
+      "official_model": "gpt-6.1-terra",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-terra",
+      "rates": {
+        "input": "1.00",
+        "cached_input": "0.05",
+        "cache_write_input": "1.25",
+        "output": "5.00"
+      },
+      "long_context": {
+        "above_input_tokens": 272000,
+        "rates": {
+          "input": "2.00",
+          "cached_input": "0.10",
+          "cache_write_input": "2.50",
+          "output": "7.50"
+        }
+      },
+      "note": "Standard processing with 30-minute cache writes. Above 272,000 input tokens the entire request uses 2x input/cache and 1.5x output prices."
     }
   }
 }

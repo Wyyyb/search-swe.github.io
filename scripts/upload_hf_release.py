@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 from import_results import ROOT, read, write
+from hf_network import authenticated_api, retry_429
 from publication import DEFAULT_PACKAGE, REPO_ID, fingerprints, load_package
 
 
@@ -30,17 +31,24 @@ def check_site_snapshot(package, manifest):
     return hashlib.sha256(source.read_bytes()).hexdigest()
 
 
-def verify_remote(api, package, manifest, revision, site_origin):
+def verify_remote(api, package, manifest, revision, site_origin, include_metadata=True):
     """Verify every file at a fixed commit, then exercise anonymous browser reads."""
     expected = dict(manifest['files'])
-    expected['publication.json.gz'] = fingerprints(package / 'publication.json.gz')
+    if include_metadata:
+        expected['publication.json.gz'] = fingerprints(package / 'publication.json.gz')
+    else:
+        expected.pop('README.md')
     remote = {}
     for item in api.list_repo_tree(REPO_ID, path_in_repo=manifest['release_path'],
                                    recursive=True, revision=revision, repo_type='dataset'):
         if hasattr(item, 'blob_id'):
             remote[item.path] = item
-    for item in api.get_paths_info(REPO_ID, ['README.md', 'publication.json.gz'], revision=revision, repo_type='dataset'):
-        remote[item.path] = item
+    release_files = {p for p in expected if p.startswith(manifest['release_path'] + '/')}
+    if set(remote) != release_files:
+        raise ValueError('Remote release contains missing or unlisted files')
+    if include_metadata:
+        for item in api.get_paths_info(REPO_ID, ['README.md', 'publication.json.gz'], revision=revision, repo_type='dataset'):
+            remote[item.path] = item
     for path, hashes in expected.items():
         item = remote.get(path)
         if item is None or item.size != hashes['bytes']:
@@ -64,10 +72,14 @@ def verify_remote(api, package, manifest, revision, site_origin):
     for path in dict.fromkeys(samples):
         url = f'https://huggingface.co/datasets/{REPO_ID}/resolve/{revision}/{path}'
         request = Request(url, headers={'Origin': site_origin})
-        with urlopen(request, timeout=120) as response:
-            if response.headers.get('Access-Control-Allow-Origin') not in {'*', site_origin}:
-                raise ValueError(f'Anonymous browser CORS check failed: {path}')
-            body = response.read()
+        def anonymous_download():
+            with urlopen(request, timeout=120) as response:
+                cors = response.headers.get('Access-Control-Allow-Origin')
+                return cors, response.read()
+
+        cors, body = retry_429(anonymous_download, 'anonymous public download')
+        if cors not in {'*', site_origin}:
+            raise ValueError(f'Anonymous browser CORS check failed: {path}')
         if hashlib.sha256(body).hexdigest() != expected[path]['sha256']:
             raise ValueError(f'Anonymous download hash mismatch: {path}')
         if path.endswith('.json'):
@@ -88,7 +100,7 @@ def activate(package, manifest, revision, site_snapshot_sha256):
     receipt = package.with_name(package.name + '-uploaded.json')
     write(receipt, config)
     print(f'Pinned HF revision: {revision}\nReceipt: {receipt}')
-    print(f'Generated {len(pages)} production pages. No Git commit, push, or website deployment was performed.')
+    print(f'Generated {len(pages)} production files. No Git commit, push, or website deployment was performed.')
     print('Next check: python scripts/build_leaderboard.py --production --check')
 
 
@@ -114,26 +126,24 @@ def main():
         print(f'Dry run only. Target: https://huggingface.co/datasets/{REPO_ID}')
         print('Run the same command with --upload to publish. No network requests or writes were made.')
         return
-    from huggingface_hub import HfApi
-    anonymous = HfApi(token=False)
-    info = anonymous.repo_info(REPO_ID, repo_type='dataset')
+    api = authenticated_api()
+    info = api.repo_info(REPO_ID, repo_type='dataset')
     if info.private or info.gated:
         raise ValueError('The website requires a public, non-gated dataset')
     revision = args.verify_revision
     if args.upload:
-        api = HfApi()  # Uses hf auth login or HF_TOKEN; never embed a token in site files.
         api.whoami()  # Fail before starting if authentication is missing or invalid.
         print('Uploading resumably. If interrupted, repeat this command with the same package.')
         api.upload_large_folder(REPO_ID, package, repo_type='dataset', revision='main',
                                 num_workers=args.workers,
                                 allow_patterns=['README.md', manifest['release_path'] + '/**'])
         # Publish the inventory last. Existing releases are never deleted.
-        commit = api.upload_file(path_or_fileobj=package / 'publication.json.gz',
+        commit = retry_429(lambda: api.upload_file(path_or_fileobj=package / 'publication.json.gz',
                                  path_in_repo='publication.json.gz', repo_id=REPO_ID, repo_type='dataset',
-                                 commit_message=f'Complete Search-SWE release {manifest["snapshot_id"]}')
+                                 commit_message=f'Complete Search-SWE release {manifest["snapshot_id"]}'), 'publication inventory commit')
         revision = commit.oid
         print(f'Upload complete: {revision}. Verifying before changing website URLs…')
-    verify_remote(anonymous, package, manifest, revision, args.site_origin)
+    verify_remote(api, package, manifest, revision, args.site_origin)
     # Recheck in case local result files were edited during the upload.
     if check_site_snapshot(package, manifest) != source_sha:
         raise ValueError('Local snapshot changed during upload; website configuration was not updated')

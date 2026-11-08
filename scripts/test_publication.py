@@ -156,7 +156,9 @@ class PackageTests(unittest.TestCase):
             remote = [SimpleNamespace(path=p, size=f['bytes'], blob_id=f['git_blob'],
                                      lfs=SimpleNamespace(sha256=f['sha256']) if p.endswith('.gz') else None)
                       for p, f in expected.items()]
-            api = SimpleNamespace(list_repo_tree=lambda *a, **kw: remote, get_paths_info=lambda *a, **kw: [])
+            api = SimpleNamespace(
+                list_repo_tree=lambda *a, **kw: [i for i in remote if i.path.startswith('releases/test/')],
+                get_paths_info=lambda *a, **kw: [i for i in remote if not i.path.startswith('releases/test/')])
             class Response:
                 headers = {'Access-Control-Allow-Origin': '*'}
                 def __init__(self, request, **kw):

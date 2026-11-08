@@ -5,8 +5,13 @@ const path = require('node:path');
 const {chromium} = require('playwright');
 const root = path.resolve(__dirname, '..');
 const origin = process.env.LEADERBOARD_ORIGIN || 'http://127.0.0.1:7788';
-const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'content/leaderboard/release.json')));
-const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
+const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'leaderboard/results.json')));
+const read = name => {
+  const file = /^https?:/.test(name)
+    ? path.join(path.resolve(root, process.env.HF_PACKAGE || '.build/hf-trajectories-luna-terra'), new URL(name).pathname)
+    : path.join(root, name);
+  return JSON.parse(fs.readFileSync(file));
+};
 
 (async () => {
   const browser = await chromium.launch({headless: true, args: ['--no-sandbox']});
@@ -16,22 +21,22 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     page.on('pageerror', error => errors.push(error.message));
     page.on('request', request => requests.push(request.url()));
     await page.goto(`${origin}/leaderboard/`);
-    assert.equal(await page.locator('tbody tr:visible').count(), 3);
-    assert.deepEqual(await page.locator('.score-value').allTextContents(), ['16.4', '15.5', '4.7']);
-    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), Array(3).fill('47 / 47'));
-    assert.deepEqual(await page.locator('tbody .token-cell').allTextContents(), ['1.07B', '2.42B', '528.4M']);
-    assert.equal(await page.locator('tbody .token-cell').first().getAttribute('title'), '1,073,042,462 tokens');
+    assert.equal(await page.locator('tbody tr:visible').count(), 2);
+    assert.deepEqual(await page.locator('.score-value').allTextContents(), ['42.5', '13.1']);
+    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), Array(2).fill('47 / 47'));
+    assert.deepEqual(await page.locator('tbody .token-cell').allTextContents(), ['2.25B', '817.2M']);
+    assert.equal(await page.locator('tbody .token-cell').first().getAttribute('title'), '2,248,791,878 tokens');
     assert(!requests.some(url => url.includes('/traces/')));
-    assert.equal(await page.locator('.model-name').first().innerText(), 'GPT-6 Luna (max)');
+    assert.equal(await page.locator('.model-name').first().innerText(), 'GPT-6.1 Terra (max)');
     assert.equal(await page.locator('.agent-cell').first().innerText(), 'Codex (v0.164.0)');
     assert(!(await page.locator('tbody').innerText()).includes('OpenRouter'));
-    assert.deepEqual(await page.locator('tbody .release-date').allTextContents(), ['2026-09-22', '2026-10-17', '2026-09-21']);
+    assert.deepEqual(await page.locator('tbody .release-date').allTextContents(), ['2026-10-26', '2026-09-22']);
     const idFor = name => snapshot.entries.find(entry => entry.name === name).id;
-    const rankedIds = ['GPT-6 Luna', 'DeepSeek V4.1 Flash 1017', 'MiMo-V2.6-Flash'].map(idFor);
+    const rankedIds = ['GPT-6.1 Terra', 'GPT-6 Luna'].map(idFor);
     const sortOrders = {
-      'score-desc': [0, 1, 2], 'score-asc': [2, 1, 0],
-      'date-desc': [1, 0, 2], 'date-asc': [2, 0, 1],
-      'tokens-desc': [1, 0, 2], 'tokens-asc': [2, 0, 1],
+      'score-desc': [0, 1], 'score-asc': [1, 0],
+      'date-desc': [0, 1], 'date-asc': [1, 0],
+      'tokens-desc': [0, 1], 'tokens-asc': [1, 0],
     };
     for (const [sort, order] of Object.entries(sortOrders)) {
       await page.locator('#sort').selectOption(sort);
@@ -55,7 +60,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     await page.locator('[data-sort-key="tokens"]').click();
     assert.equal(await page.locator('#sort').inputValue(), 'tokens-desc');
     await page.getByRole('button', {name: 'GPU', exact: true}).click();
-    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), ['23 / 23', '23 / 23', '23 / 23']);
+    assert.deepEqual(await page.locator('tbody .coverage').allTextContents(), ['23 / 23', '23 / 23']);
     const gpu = new Set(snapshot.tasks.filter(t => t.hardware === 'gpu').map(t => t.name));
     const luna = snapshot.entries.find(e => e.model === 'openai/gpt-6-luna');
     const gpuTotal = snapshot.trials.filter(t => t.entry === luna.id && gpu.has(t.task)).reduce((sum, t) => sum + t.tokens.total_tokens, 0);
@@ -146,23 +151,23 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     await page.goto(`${origin}/leaderboard/trials/${codeContext.id}/#step-7`);
     await page.waitForSelector('#step-7');
     assert.equal(await page.locator('#step-7 .step-number').innerText(), '#7');
-    assert.equal(await page.locator('#step-7 .step-delta').innerText(), '+6s');
-    assert.equal(await page.locator('#step-7 .step-elapsed').innerText(), '47s');
+    assert.equal(await page.locator('#step-7 .step-delta').innerText(), '+2m 57s');
+    assert.equal(await page.locator('#step-7 .step-elapsed').innerText(), '4m 5s');
     assert.equal(await page.locator('#step-7 .step-agent').innerText(), 'Codex');
     assert.equal(await page.locator('#step-7 .step-model').innerText(), 'gpt-6-luna');
-    assert.deepEqual(await page.locator('#step-7 .step-token').evaluateAll(nodes => nodes.map(n => n.dataset.tokens)), ['27999', '19607', '5848']);
+    assert.deepEqual(await page.locator('#step-7 .step-token').evaluateAll(nodes => nodes.map(n => n.dataset.tokens)), ['35728', '18231', '24597']);
     assert(!(await page.locator('#step-7 .step-heading').innerText()).includes('$'));
     await page.locator('#trace-type').selectOption('tools');
     await page.waitForSelector('#step-4 .step-token-cache');
     assert.equal(await page.locator('#step-4 .step-token-cache').getAttribute('data-tokens'), '');
     assert((await page.locator('#step-4 .step-token-cache').innerText()).includes('—'));
-    assert.equal(await page.locator('#step-7 .step-delta').innerText(), '+6s');
+    assert.equal(await page.locator('#step-7 .step-delta').innerText(), '+2m 57s');
     await page.locator('#step-8 .step-number').click();
     assert.equal(new URL(page.url()).hash, '#step-8');
-    assert.equal(await page.locator('#step-8 .step-delta').innerText(), '+1m 24s');
-    assert.equal(await page.locator('#step-8 .step-elapsed').innerText(), '2m 11s');
+    assert.equal(await page.locator('#step-8 .step-delta').innerText(), '+1m 28s');
+    assert.equal(await page.locator('#step-8 .step-elapsed').innerText(), '5m 33s');
 
-    // Browse real exported evidence, including a separately regraded verifier.
+    // Browse the current selected verifier and original coding evidence.
     await page.getByRole('tab', {name: 'Agent', exact: true}).click();
     await page.waitForSelector('#panel-agent .file-text');
     assert.equal(await page.locator('#panel-agent .file-heading strong').innerText(), 'codex.txt');
@@ -182,7 +187,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     await page.waitForFunction(length => document.querySelector('#panel-agent .file-text').textContent.length > length, sessionLength);
     await page.getByRole('tab', {name: 'Verifier', exact: true}).click();
     await page.locator('#panel-verifier .file-preview-footer').getByText('Complete file', {exact: true}).waitFor();
-    assert((await page.locator('#panel-verifier .file-provenance summary').innerText()).includes('regraded separately'));
+    assert((await page.locator('#panel-verifier .file-note').textContent()).includes('final selected grading result'));
     assert.equal(JSON.parse(await page.locator('#panel-verifier .file-text').innerText()).reward, codeContext.score / 100);
     assert.equal(await page.locator('#panel-verifier h2').count(), 0);
     await page.getByRole('tab', {name: 'Artifacts', exact: true}).click();
@@ -205,7 +210,8 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     await page.locator('#panel-artifacts input').fill('');
     assert.equal(await appFolder.getAttribute('aria-expanded'), 'false');
     await appFolder.click();
-    await page.locator('#panel-artifacts .file-item[data-path$=".pyc"]').click();
+    await page.locator('#panel-artifacts input').fill('.sqlite');
+    await page.locator('#panel-artifacts .file-item[data-path$=".sqlite"]').first().click();
     assert((await page.locator('#panel-artifacts .file-preview-empty').innerText()).includes('Preview unavailable'));
     assert.equal(await page.locator('#panel-artifacts .file-actions a').count(), 0);
     await page.getByRole('tab', {name: 'Config', exact: true}).click();
@@ -229,14 +235,12 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     assert(await page.locator('#panel-agent').isVisible());
 
     // Exercise the largest parallel-call step, with a direct refreshable anchor.
-    const many = snapshot.trials.find(t => t.task === 'negative-constraint-retrieval' && t.configuration.model.startsWith('xiaomi/'));
+    const many = snapshot.trials.find(t => t.task === 'scientific-paper-qa' && t.configuration.model === 'openai/gpt-6-luna');
     const manifest = read(many.trajectory_url);
     const busiest = [...manifest.steps].sort((a, b) => b.calls - a.calls)[0];
     await page.goto(`${origin}/leaderboard/trials/${many.id}/#step-${busiest.id}`);
     await page.waitForSelector('.tool-call');
-    assert((await page.locator(`#step-${busiest.id} .tool-call`).count()) <= 20);
-    await page.locator(`#step-${busiest.id}`).getByRole('button', {name: /Load more tool calls/}).click();
-    await page.waitForFunction(id => document.querySelectorAll(`#step-${id} .tool-call`).length > 20, busiest.id);
+    assert.equal(await page.locator(`#step-${busiest.id} .tool-call`).count(), busiest.calls);
     await page.reload();
     await page.waitForSelector('.tool-call');
     assert.equal(await page.locator(`#step-${busiest.id} .step-number`).innerText(), `#${busiest.id}`);
@@ -253,7 +257,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     await page.waitForFunction(() => document.getElementById('trace-status').textContent.startsWith('0 /'));
 
     // A text field externalized into several parts is initially just a preview.
-    const large = snapshot.trials.find(t => t.task === 'sketch-text-search' && t.configuration.model.startsWith('deepseek/'));
+    const large = snapshot.trials.find(t => t.task === 'composed-image-search' && t.configuration.model === 'openai/gpt-6-luna');
     const largeManifest = read(large.trajectory_url);
     const directory = path.posix.dirname(large.trajectory_url);
     let target;
@@ -312,7 +316,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(root, name)));
     }
     const noJS = await browser.newPage({javaScriptEnabled: false});
     await noJS.goto(`${origin}/leaderboard/`);
-    assert.equal(await noJS.locator('tbody tr').count(), 3);
+    assert.equal(await noJS.locator('tbody tr').count(), 2);
     await noJS.goto(`${origin}/leaderboard/trials/${many.id}/`);
     assert(await noJS.locator('#panel-verifier').isVisible());
     assert.equal(errors.length, 0, errors.join('\n'));

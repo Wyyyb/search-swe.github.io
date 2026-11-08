@@ -1,0 +1,277 @@
+"""Prepare Luna/Terra public evidence directly from the current final archive.
+
+No evaluation jobs are changed and no network requests are made. Publication is
+a separate, explicit step in replace_hf_trajectories.py.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import math
+from collections import Counter
+from datetime import datetime
+from pathlib import Path
+
+from export_trial_files import export_files, sanitize
+from import_results import ROOT, NAMES, TOKEN_FIELDS, digest, encode, export_trajectory, read, scrub, write
+from leaderboard_costs import calculate
+from prepare_hf_release import finalize, referenced_files
+from publication import PublicText, load_package, safe_path
+
+MODELS = ('openai/gpt-6-luna', 'openai/gpt-6.1-terra')
+DEFAULT_FINAL = Path('/data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/final-trajectories')
+DEFAULT_PACKAGE = ROOT / '.build/hf-trajectories-luna-terra'
+CONTENT = ROOT / 'content/leaderboard'
+
+
+def selected_rows(final, tasks):
+    rows = [r for r in csv.DictReader((final / 'INDEX.csv').open()) if r['model'] in MODELS]
+    keys = [(r['task'], r['model']) for r in rows]
+    if len(keys) != len(set(keys)) or set(keys) != {(t, m) for t in tasks for m in MODELS}:
+        raise ValueError('Luna and Terra must each cover exactly the complete task catalog')
+    return sorted(rows, key=lambda r: (r['task'], r['model']))
+
+
+def verified_bytes(path, expected):
+    data = path.read_bytes()
+    if len(data) != expected['bytes'] or digest(data) != expected['sha256']:
+        raise ValueError(f'Archived source changed: {path.name}')
+    return data
+
+
+def session_usage(events):
+    """Count explicit response receipts once, including a receipt after the last UI counter."""
+    requests, starts, finishes = {}, [], []
+    last_thread = None
+    for event in events:
+        payload = event.get('payload', {})
+        if event.get('type') == 'token_usage_record':
+            response = payload.get('response_id')
+            usage = payload.get('usage', {})
+            if (not response or any(type(usage.get(k)) is not int or usage[k] < 0 for k in TOKEN_FIELDS[:-1]) or
+                    usage['total_tokens'] != usage['input_tokens'] + usage['output_tokens'] or
+                    usage['cached_input_tokens'] + usage['cache_write_input_tokens'] > usage['input_tokens']):
+                raise ValueError('Invalid native response usage')
+            if response in requests and requests[response] != usage:
+                raise ValueError('Conflicting repeated response usage')
+            requests[response] = usage
+            last_thread = payload.get('thread_token_usage')
+        elif event.get('type') == 'event_msg':
+            if payload.get('type') == 'task_started':
+                starts.append(event['timestamp'])
+            elif payload.get('type') == 'task_complete':
+                finishes.append(event['timestamp'])
+    if not requests:
+        raise ValueError('No per-response coding usage in the selected session')
+    totals = Counter()
+    for usage in requests.values():
+        totals.update({k: usage[k] for k in TOKEN_FIELDS[:-1]})
+    if last_thread is None or any(totals[k] != last_thread.get(k) for k in TOKEN_FIELDS[:-1]):
+        raise ValueError('Response receipts disagree with the final native thread counter')
+    totals['response_count'] = len(requests)
+    return dict(totals), [{'response_id': k, 'usage': v} for k, v in requests.items()], starts, finishes
+
+
+def coding_time(result, starts, finishes):
+    execution = result.get('agent_execution') or {}
+    start, finish = execution.get('started_at'), execution.get('finished_at')
+    basis = 'Harbor agent_execution'
+    if not start or not finish:
+        start = starts[0] if len(starts) == 1 else None
+        finish = finishes[0] if len(finishes) == 1 else None
+        basis = 'Native coding session task_started/task_complete'
+    if not start or not finish:
+        return start, finish, None, 'Original coding end time unavailable; regrade duration is excluded.'
+    seconds = (datetime.fromisoformat(finish) - datetime.fromisoformat(start)).total_seconds()
+    if seconds < 0 or not math.isfinite(seconds):
+        raise ValueError('Invalid original coding duration')
+    return start, finish, seconds, basis
+
+
+def prepare(final, package):
+    final, package = final.resolve(), package.resolve()
+    catalog = read(ROOT / 'content/tasks/catalog.json')
+    rows = selected_rows(final, {t['name'] for t in catalog})
+    if len(catalog) != 47:
+        raise ValueError('This publication expects 47 tasks and 94 selected trials')
+    policy = read(CONTENT / 'selection.json')
+    if policy.get('included_models') != list(MODELS):
+        raise ValueError('Website selection must explicitly contain only Luna and Terra')
+    metadata = read(CONTENT / 'model-metadata.json')
+    archive = read(final / 'MANIFEST.json')
+    if archive['index_sha256'] != digest((final / 'INDEX.csv').read_bytes()):
+        raise ValueError('Archive manifest and index differ')
+    settings = {(s['task'], s['model']): s for s in archive['settings']}
+    source_hashes = {'index': archive['index_sha256'], 'archive': digest((final / 'MANIFEST.json').read_bytes()),
+                     'model_metadata': digest(encode(metadata)), 'selection': digest(encode(policy))}
+    release_id = policy['updated_at'] + '-luna-terra-' + digest(encode(source_hashes))[:10]
+    release_path = 'releases/' + release_id
+    if (package / 'publication.json.gz').exists():
+        manifest = load_package(package)
+        if manifest['source_hashes'] != source_hashes:
+            raise ValueError('Package has different source records; use a new --package directory')
+        snapshot = read(package / manifest['release_path'] / 'snapshot.json')
+        referenced_files(package / manifest['release_path'], snapshot)
+        return snapshot, manifest
+    # Retrying an interrupted export is safe only in this exact release directory.
+    if package.exists() and any(p.name != 'releases' for p in package.iterdir()):
+        raise ValueError('Unrecognized incomplete package; use a new --package directory')
+    if (package / 'releases').exists() and any(p.name != release_id for p in (package / 'releases').iterdir()):
+        raise ValueError('Incomplete package belongs to another source snapshot')
+    public = PublicText(final.parent, scrub)
+    snapshot = {'schema': 1, 'id': release_id, 'observed_at': archive['at'], 'source_hashes': source_hashes,
+                'selection': policy, 'tasks': [{k: t[k] for k in ('name', 'title', 'hardware')} for t in catalog],
+                'entries': [], 'trials': [], 'publication': {'schema': 1,
+                    'path_aliases': {'BENCHMARK_ROOT': 'Benchmark checkout', 'EVAL_ROOT': 'Evaluation workspace',
+                                    'WORKSPACE_ROOT': 'Host workspace', 'USER_HOME': 'User home directory'},
+                    'note': 'Sanitized public text; source hashes identify the unmodified private archive.'}}
+    entries, usage_rows = {}, []
+    for number, row in enumerate(rows, 1):
+        root = safe_path(final, row['task'] + '/' + row['model_label'])
+        pointer = read(safe_path(final, row['metadata']))
+        if pointer.get('status') != 'valid' or pointer.get('DO_NOT_USE_AS_FINAL'):
+            raise ValueError(f'Invalid final selection: {row["task"]} / {row["model"]}')
+        for key in ('task', 'model', 'effort', 'primary_trajectory_sha256'):
+            if pointer[key] != row[key]:
+                raise ValueError(f'Selection mismatch: {row["task"]} / {key}')
+        manifest_data = safe_path(final, row['file_manifest']).read_bytes()
+        if digest(manifest_data) != row['file_manifest_sha256']:
+            raise ValueError('Source file inventory changed')
+        inventory = {f['relative']: f for f in json.loads(manifest_data)['files']}
+        output = safe_path(root, pointer['output'])
+        trial_root = safe_path(root, pointer['selected_native_trial'])
+
+        def source(path):
+            return verified_bytes(path, inventory[path.relative_to(output).as_posix()])
+
+        trajectory_path = safe_path(final, row['primary_trajectory'])
+        if trajectory_path != safe_path(root, pointer['primary_trajectory']) or trajectory_path != trial_root / 'agent/trajectory.json':
+            raise ValueError('Primary trajectory does not follow the selected native trial')
+        trajectory = source(trajectory_path)
+        if digest(trajectory) != row['primary_trajectory_sha256']:
+            raise ValueError('Primary trajectory hash changed')
+        reward_path = safe_path(root, pointer['selected_reward'])
+        reward_bytes = source(reward_path)
+        reward = json.loads(reward_bytes)
+        native = reward['reward'] if isinstance(reward, dict) else reward
+        score = float(row['score'])
+        if (not math.isfinite(score) or not 0 <= score <= 100 or
+                not math.isclose(score, float(pointer['score']), abs_tol=1e-8) or
+                not math.isclose(score, 100 * float(native), abs_tol=1e-7)):
+            raise ValueError('Selected score disagrees with the final native reward')
+        result = json.loads(source(safe_path(root, pointer['selected_result'])))
+        if result['task_name'].removeprefix('search-swe/') != row['task'] or not (result.get('verifier') or {}).get('finished_at'):
+            raise ValueError('Native verification has not completed for the selected task')
+        native_result_reward = result['verifier_result']['rewards']['reward']
+        if not math.isclose(float(native_result_reward), float(native), abs_tol=1e-9):
+            raise ValueError('Native result and selected reward differ')
+        raw = json.loads(trajectory)
+        if raw['agent']['model_name'] != row['model']:
+            raise ValueError('Selected trajectory model differs')
+        sessions = sorted((trial_root / 'agent/sessions').rglob('*.jsonl'))
+        if len(sessions) != 1:
+            raise ValueError('Expected exactly one original coding session per selected trial')
+        events = (json.loads(line) for line in source(sessions[0]).splitlines() if line.strip())
+        tokens, requests, starts, finishes = session_usage(events)
+        start, finish, seconds, time_basis = coding_time(result, starts, finishes)
+        entry_id = release_id + '-' + row['model_label']
+        trial_id = row['task'] + '-' + row['model_label'] + '-' + digest(trajectory + reward_bytes)[:12]
+        destination = package / release_path / 'trials' / trial_id
+        count, redactions = export_trajectory(raw, destination, scrubber=public, public=True)
+        files = export_files(trial_root, reward_path.parent, destination, public, write)
+        folders = {'agent': trial_root / 'agent', 'verifier': reward_path.parent, 'artifacts': trial_root / 'artifacts'}
+        for group, items in files['groups'].items():
+            for item in items:
+                path = folders.get(group, trial_root) / item['name']
+                expected = inventory[path.relative_to(output).as_posix()]
+                if item['bytes'] != expected['bytes'] or (item['source_sha256'] and item['source_sha256'] != expected['sha256']):
+                    raise ValueError(f'Exported evidence differs from source inventory: {group}/{item["name"]}')
+        info = metadata['models'][row['model']]
+        entry = {'id': entry_id, 'model': row['model'], 'name': NAMES[row['model']], 'effort': row['effort'],
+                 'agent': 'Codex', 'agent_version': raw['agent']['version'], 'provider': 'OpenRouter',
+                 'release_date': info['release_date'], 'release_date_source': info['source']}
+        if entry_id in entries and entries[entry_id] != entry:
+            raise ValueError('Mixed agent configurations in one model entry')
+        entries[entry_id] = entry
+        selected = settings[(row['task'], row['model'])]['selection']
+        qualification = {k: selected.get(k) or pointer.get(k) for k in
+                         ('qualification_flag', 'judge_semantic_quality_flag', 'qualification_limitations')}
+        qualification = sanitize({k: v for k, v in qualification.items() if v}, public)
+        exception = (result.get('exception_info') or {}).get('exception_type')
+        fm = raw.get('final_metrics', {})
+        usage_note = 'Per-response native coding receipts, deduplicated by response ID.'
+        if any(tokens[k] != fm.get(f) for k, f in [('input_tokens', 'total_prompt_tokens'), ('output_tokens', 'total_completion_tokens')]):
+            usage_note += ' The ATIF summary lags the final receipt; totals include that recorded response.'
+        config = {'agent': 'Codex', 'version': raw['agent']['version'], 'model': row['model'],
+                  'effort': row['effort'], 'provider': 'OpenRouter', 'run_mode': pointer.get('mode') or 'native',
+                  'task_commit': pointer.get('source_revision'), 'verifier_commit': pointer.get('source_revision')}
+        trial = {'id': trial_id, 'entry': entry_id, 'task': row['task'], 'score': score, 'valid': True,
+                 'agent_status': exception or ('completed' if finishes else 'Completion not recorded in the archived session'),
+                 'agent_seconds': seconds, 'started_at': start, 'finished_at': finish, 'agent_time_basis': time_basis,
+                 'tokens': tokens, 'usage_note': usage_note, 'steps': count, 'configuration': config,
+                 'qualification': qualification, 'trajectory_url': f'trials/{trial_id}/manifest.json',
+                 'trajectory_sha256': digest(trajectory), 'reward_sha256': digest(reward_bytes),
+                 'reward': sanitize(reward, public), 'redacted_fields': redactions}
+        write(destination / 'evaluation.json', {k: trial[k] for k in ('score', 'reward', 'configuration', 'qualification')})
+        snapshot['trials'].append(trial)
+        usage_rows.append({'task': row['task'], 'model': row['model'], 'effort': row['effort'],
+                           'primary_trajectory_sha256': digest(trajectory), 'requests': requests})
+        print(f'Prepared {number:2}/94: {row["task"]} / {row["model_label"]}', flush=True)
+    snapshot['entries'] = sorted(entries.values(), key=lambda e: e['id'])
+    # Freeze usage outside the upload package, so source receipts are never uploaded accidentally.
+    usage = {'schema': 1, 'rows': usage_rows}
+    write(package.with_suffix('.usage.json'), usage)
+    calculate(snapshot, usage, read(CONTENT / 'official-pricing.json'))
+    manifest = finalize(package, snapshot, release_path)
+    return snapshot, manifest
+
+
+def install_preview(package, snapshot, manifest):
+    from build_leaderboard import generate, write_pages
+    source = encode(snapshot)
+    price_source = (CONTENT / 'official-pricing.json').read_bytes()
+    usage_source = package.with_suffix('.usage.json').read_bytes()
+    costs = calculate(snapshot, json.loads(usage_source), json.loads(price_source))
+    supplement = {'schema': 1, 'snapshot_id': snapshot['id'], 'snapshot_sha256': digest(source),
+                  'pricing_sha256': digest(price_source), 'usage_sha256': digest(usage_source), 'trials': costs}
+    backup = package.with_suffix('.previous-site.json')
+    if not backup.exists():
+        write(backup, {name: read(CONTENT / name) for name in ('release.json', 'costs.json', 'storage.json')})
+    write(CONTENT / 'release.json', source)
+    write(CONTENT / 'releases' / (snapshot['id'] + '.json'), source)
+    write(CONTENT / 'costs.json', (json.dumps(supplement, indent=2, sort_keys=True) + '\n').encode())
+    write(CONTENT / 'storage.json', {'provider': 'preview', 'snapshot_id': snapshot['id'],
+        'source_hashes': snapshot['source_hashes'],
+        'data_base_url': '/' + package.relative_to(ROOT).as_posix() + '/' + manifest['release_path']})
+    pages = generate()
+    for old in (CONTENT / 'releases').glob('*.json'):
+        if old.stem != snapshot['id']:
+            old.unlink()
+    changed, removed = write_pages(pages)
+    print(f'Homepage preview ready: {changed} files generated, {removed} obsolete pages removed. HF unchanged.')
+    for entry in snapshot['entries']:
+        trials = [t for t in snapshot['trials'] if t['entry'] == entry['id']]
+        print(f'{entry["name"]}: {len(trials)}/47 tasks, mean score {sum(t["score"] for t in trials)/len(trials):.8f}')
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--final-dir', type=Path, default=DEFAULT_FINAL)
+    parser.add_argument('--package', type=Path, default=DEFAULT_PACKAGE)
+    parser.add_argument('--check', action='store_true', help='Validate the prepared public package without writing')
+    args = parser.parse_args()
+    package = args.package.resolve()
+    if args.check:
+        manifest = load_package(package)
+        referenced_files(package / manifest['release_path'], read(package / manifest['release_path'] / 'snapshot.json'))
+        from upload_hf_release import check_site_snapshot
+        check_site_snapshot(package, manifest)
+        print('Public package and homepage snapshot verified; no network requests or writes.')
+    else:
+        snapshot, manifest = prepare(args.final_dir, package)
+        install_preview(package, snapshot, manifest)
+
+
+if __name__ == '__main__':
+    main()

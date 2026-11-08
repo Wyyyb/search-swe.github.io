@@ -21,6 +21,7 @@ from export_trial_files import export_files, sanitize
 ROOT = Path(__file__).resolve().parents[1]
 NAMES = {
     "openai/gpt-6-luna": "GPT-6 Luna",
+    "openai/gpt-6.1-terra": "GPT-6.1 Terra",
     "deepseek/deepseek-v4.1-flash-1017": "DeepSeek V4.1 Flash 1017",
     "xiaomi/mimo-v2.6-flash": "MiMo-V2.6-Flash",
     "z-ai/glm-5.3-flash": "GLM 5.3 Flash",
@@ -93,12 +94,14 @@ def text_value(value):
 
 
 def export_trajectory(raw, directory, check=False, scrubber=scrub, public=False):
-    """Pair observations by call ID across the whole trace, never by position."""
+    """Join nonempty call IDs; keep anonymous observations in their recorded step."""
     observations = {}
-    call_ids = {c['tool_call_id'] for s in raw['steps'] for c in s.get('tool_calls', [])}
+    call_ids = {c.get('tool_call_id') for s in raw['steps'] for c in s.get('tool_calls', [])
+                if c.get('tool_call_id')}
     for step in raw['steps']:
         for observation in step.get('observation', {}).get('results', []):
-            observations.setdefault(observation.get('source_call_id'), []).append(observation)
+            if observation.get('source_call_id'):
+                observations.setdefault(observation['source_call_id'], []).append(observation)
     steps, index, search, download_steps = [], [], [], []
     external_count = 0
     redactions = 0
@@ -134,19 +137,25 @@ def export_trajectory(raw, directory, check=False, scrubber=scrub, public=False)
         if source.get('reasoning_content'):
             step['reasoning'] = payload(source['reasoning_content'], searchable)
         step['calls'] = []
+        anonymous = [o for o in source.get('observation', {}).get('results', [])
+                     if not o.get('source_call_id')]
+        # Native web calls can omit IDs. Only one anonymous call in this step
+        # makes its local observations unambiguous; otherwise leave them unpaired.
+        single_anonymous = sum(not c.get('tool_call_id') for c in source.get('tool_calls', [])) == 1
         for call in source.get('tool_calls', []):
             name = call['function_name']
             searchable.append(name)
             step['calls'].append({
-                'id': call['tool_call_id'], 'name': name,
+                'id': call.get('tool_call_id'), 'name': name,
                 'input': payload(call.get('arguments', {}), searchable),
                 'outputs': [payload(o.get('content', ''), searchable)
-                            for o in observations.get(call['tool_call_id'], [])],
+                            for o in (observations.get(call['tool_call_id'], []) if call.get('tool_call_id')
+                                      else anonymous if single_anonymous else [])],
             })
         step['unmatched_outputs'] = [
             {'id': o.get('source_call_id'), 'content': payload(o.get('content', ''), searchable)}
             for o in source.get('observation', {}).get('results', [])
-            if o.get('source_call_id') not in call_ids
+            if o.get('source_call_id') not in call_ids and (o.get('source_call_id') or not single_anonymous)
         ]
         # Keep the recorded structured ATIF fields for a complete text download.
         download_steps.append({k: source[k] for k in (

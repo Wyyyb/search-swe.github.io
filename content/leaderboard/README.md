@@ -1,48 +1,60 @@
 # Leaderboard data and publication
 
-The homepage now links to `/leaderboard/`, with static model entries and 141
-trial pages. Local previews read exported trajectories. Production pages read the same public
-files from an immutable Hugging Face commit. Neither mode calls inference APIs or
-modifies evaluation jobs. See [the publication guide](../../docs/leaderboard-publication.md)
-for the prepared upload script, path normalization and production checks.
+The current homepage contains **47 tasks (24 CPU, 23 GPU), two models,
+and 94 selected trials** from the 2026-11-09 final archive. GPT-6.1 Terra scores
+42.5322347241 and GPT-6 Luna scores 13.1030991867 on the 0–100 mean-task scale.
+`selection.json` explicitly allows these two models; other archived models are
+not imported. Old result snapshots and generated routes have been removed.
 
-The current selection has 47 tasks (24 CPU, 23 GPU) and three models.
-The 2026-11-04 withdrawal removes GLM 5.3 Flash and its 47 trials from the
-leaderboard, chart, downloads, public snapshots and generated routes.
-`selection.json` records this explicit exclusion so subsequent imports do not
-restore it. Source benchmark jobs remain unchanged. The importer and cost tool
-still require complete matching coverage for every retained model.
-The HF withdrawal is complete. `storage.json` pins verified commit
-`824b6d863b69b1f86b9d73b365dca28af200de7c`; the pending marker is cleared.
-The current public package is `.build/hf-trajectories-without-glm/`.
-`scripts/prune_hf_models.py` retains the offline audit and idempotent retry
-commands. See the publication guide for the completed deletion and receipts.
+The public package is `.build/hf-trajectories-luna-terra/`: 32,469 inventoried payload files plus the inventory itself,
+approximately 1.04 GiB. It includes all 94 ATIF trajectories and all 94 original
+coding session text exports, with credentials redacted and host paths normalized.
+Large binary artifacts remain listed by name and size without content downloads.
+Original benchmark records are never modified.
 
-From the homepage repository root:
+The prepared replacement plan is `.build/hf-replacement-luna-terra.json`.
+It removes the old `releases/2026-10-30-3090361873/` directory from HF main
+(44,952 files, approximately 1.61 GiB), and replaces it with the new release.
+**Remote replacement is complete.** `storage.json` pins verified HF commit
+`1f675a76e0eb10ca5dfb514287c836904c923f18`. All 32,470 public files passed remote
+hash/size checks; anonymous JSON/gzip downloads and CORS checks passed. The old
+release directory is absent from the current HF tree. Production pages use only
+this immutable revision.
+
+To reverify or finish an interrupted activation, run from this repository using the existing HF login:
 
 ```bash
-python scripts/import_results.py --jobs /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs
-python scripts/leaderboard_costs.py --usage /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/traj-analysis/leaderboard-data/usage.json
-python scripts/build_leaderboard.py
-python scripts/build_tasks.py
+python scripts/replace_hf_trajectories.py --apply
+```
+
+This one command uploads and verifies the new release, commits old-release
+removal and new metadata together, verifies anonymous downloads and CORS, then
+pins `storage.json` to the actual immutable HF commit and builds production pages.
+Repeat the same command after interruption. It does not commit or push GitHub.
+Hub metadata requests explicitly use the existing login. HTTP 429 responses wait
+for the server's reset time (or bounded exponential backoff); pagination retries
+the affected page. Public browser downloads remain anonymous. No package or plan
+rebuild is needed after a rate-limit error during the initial repository query.
+Historical HF commits remain accessible; the cleanup affects the current tree.
+See [the publication guide](../../docs/leaderboard-publication.md) for details.
+
+To reproduce the local preparation from the current archive:
+
+```bash
+python scripts/import_final_results.py
+python scripts/replace_hf_trajectories.py --prepare
 python -m http.server 7788 --bind 127.0.0.1
 ```
 
-Open <http://localhost:7788/leaderboard/>. If the existing homepage server already
-uses port 7788, reuse it. Serve the repository at the domain root; deep links
-are real directories and refresh without a routing fallback.
-
-`release.json` is the current compact snapshot. `releases/<id>.json` stores
-imported snapshots; withdrawn selections must also be removed from these public
-JSON files. The release ID includes a hash of the selected index
-and analysis results (plus the website selection policy when present).
-Retained model entry and trial URLs survive a model withdrawal.
-HTML is generated into `leaderboard/`; obsolete generated
-entry, snapshot and trial pages are removed when the selection changes.
-Large exports in `data/leaderboard/traces/` are ignored by Git; a fresh checkout
-needs the importer to read trajectories. The importer leaves original records
-and older exports untouched. Public packages are prepared separately under `.build/`; source
-exports and public packages are both excluded from Git.
+Open <http://localhost:7788/leaderboard/>. Reuse an existing server on that port.
+The importer reads `INDEX.csv`, each `FINAL_RESULT.json`, native result/reward,
+and original session receipts directly; no stale analysis directory is needed.
+The source file inventories authenticate all exported text and selected inputs.
+The package, original response usage, previous-site backup, plan and receipts are
+under `.build/` and excluded from Git. `release.json`, `costs.json`, and generated
+HTML contain the new compact website results. Production builds reject local
+preview URLs. Rebuilding a local preview requires reactivating the verified HF
+release before a production deployment.
 
 ## Typography and result tables
 
@@ -55,15 +67,17 @@ Narrow screens scroll the table horizontally instead of shrinking its text.
 ## Data and statistics
 
 - Final selections come only from `final-trajectories/INDEX.csv` and each
-  `FINAL_RESULT.json`. Analysis comes from
-  `traj-analysis/leaderboard-data/results.json`. Every selected trajectory and
-  final reward is verified against its recorded SHA-256.
-- Native reward × 100 equals the selected task score. Analysis scores already
+  `FINAL_RESULT.json`. Native result/reward files and source file inventories
+  authenticate the selected evidence. Analysis summaries from older releases
+  are not used.
+- Native reward × 100 equals the selected task score. Selection scores already
   use 0–100 and must not be scaled again. Every task has equal weight; CPU and
   GPU use fixed subsets. The importer requires matching complete coverage.
 - A valid zero remains a valid measurement. Agent completion is separate and
-  appears in Agent. Original execution duration includes tool work and
-  waiting, excluding setup and independent verification.
+  appears in Agent. Original execution duration includes tools and waiting,
+  excluding setup and verification. When Harbor lacks original execution times,
+  paired session start/complete events are used. Three trials have no recorded
+  coding end time and display a missing duration; regrade time is never substituted.
 - Total tokens in the main leaderboard sum input (including cache) + output
   across the selected All / CPU / GPU task set, not a per-task average. Entry rows
   show Input Tokens, Output Tokens and Cached Tokens; trial summaries show the
@@ -71,16 +85,11 @@ Narrow screens scroll the table horizontally instead of shrinking its text.
   Additional reasoning counters appear in Agent. Reasoning is not added a second
   time. Verifier/task-internal API usage is excluded. Regrading uses original
   coding usage once. Missing values remain missing.
-- Cost is the sum of selected coding requests repriced at the frozen official
-  USD API rates in `official-pricing.json`. The displayed label is **Cost**;
-  a short note explains that it is estimated. Standard real-time rates apply,
-  using fixed DeepSeek off-peak prices for every request, regardless of run time,
-  and Xiaomi overseas USD prices. GPT-6 Luna
-  uses long-context rates only when an individual request exceeds 272,000 input
-  tokens. Ordinary input = input − cached reads − cache writes; each bucket
-  is charged once, and reasoning is already included in output. Providers
-  without a separate write surcharge charge cache creation inputs at the
-  ordinary input rate. Source URLs and the price date are retained in the table.
+- Cost sums selected coding responses at the frozen official USD API rates in
+  `official-pricing.json`, checked 2026-11-09. Both models use standard processing,
+  30-minute cache writes, and per-request long-context rates above 272,000 input
+  tokens. Cache reads/writes are subsets of input and charged once; reasoning
+  is already included in output. Sources and pricing assumptions remain public.
 - `scripts/leaderboard_costs.py` matches native response usage to every selected
   task/model/effort, verifies trajectory hashes and all published token totals,
   deduplicates response IDs, and calculates with decimal arithmetic before
@@ -91,9 +100,8 @@ Narrow screens scroll the table horizontally instead of shrinking its text.
   trajectory release. `/leaderboard/results.json` downloads the result summary
   with costs, pricing sources and immutable HF trace URLs. The original
   `release.json`, its verified hash, and the HF files remain unchanged.
-- Release Date is the model release date recorded in the analysis snapshot’s
-  `leaderboard-data/pricing.json`, not the evaluation date. The importer verifies
-  that file against `results.json`’s hash and exports each date and its source URL.
+- Release Date is recorded with its source in `model-metadata.json`, not the evaluation date. The importer reads
+  and fingerprints the model metadata, exporting each date and its source URL.
   Missing dates display as a dash and sort last in either direction.
 - Regrading is a replacement score, not an additional independent trial.
   Original trajectory and final reward hashes remain separately visible.
@@ -171,7 +179,8 @@ text exports can be downloaded as gzip. File bodies are inserted as text.
 
 Agent/artifact/config/lock/log/exception sources are the Harbor directory
 accompanying the selected trajectory. Verifier sources **always** follow the
-`FINAL_RESULT.json` final reward pointer. When a trial was regraded separately,
+`FINAL_RESULT.json` final reward pointer. The Verifier tab opens the root `reward.json` by default; nested repeated-judge
+rewards remain browsable as supporting evidence. When a trial was regraded separately,
 the final grading files are in a separate reevaluation directory. Old neighboring verifier rewards
 must not replace these final results. Config/Lock can describe the retained
 Harbor run rather than a subsequent separate scoring pass; the Verifier note
@@ -193,8 +202,10 @@ redaction or JSON formatting.
 Old `?tab=evaluation` and `?tab=configuration` links map to Verifier and Config;
 `?tab=agent-logs` also opens Agent.
 
-Tools and observations are joined by their recorded call IDs, including
-multiple outputs and missing/unmatched observations. The viewer preserves
+Tools and observations are joined by nonempty recorded call IDs, including
+multiple outputs and missing/unmatched observations. Empty IDs are never joined
+across steps: an unambiguous anonymous call uses only its step-local observations;
+ambiguous outputs remain visible as unmatched observations. The viewer preserves
 the recorded order. Nested agent commands remain as recorded; it does not
 invent child sessions or reconstruct missing hierarchy. Embedded image/binary
 payloads are preserved as text, without an image renderer in this prototype.
@@ -215,9 +226,9 @@ unchanged; exported JSON contains no local host source paths in its metadata.
 
 ```bash
 python -m unittest discover -s scripts -p 'test_*.py'
-python scripts/import_results.py --jobs /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs --check
+python scripts/import_final_results.py --check
 python scripts/build_leaderboard.py --check
-python scripts/leaderboard_costs.py --usage /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/traj-analysis/leaderboard-data/usage.json --check
+python scripts/leaderboard_costs.py --usage .build/hf-trajectories-luna-terra.usage.json --check
 python scripts/build_tasks.py --check
 node --check leaderboard.js
 node --check leaderboard-pareto.js
@@ -232,8 +243,8 @@ running, run `node scripts/test_leaderboard_browser.cjs`. Set
 Run `node scripts/test_leaderboard_costs_browser.cjs` for cost sorting, chart/table
 parity across hardware scopes, keyboard tabs, links, empty states and mobile layout.
 
-The importer check verifies deterministic exports against the current local
-source snapshot; it does not modify files. Static summaries also work without
+The importer check verifies the complete prepared package and its match to the
+local website snapshot; it does not modify files. Static summaries also work without
 JavaScript. Browser acceptance includes desktop/mobile layouts, scope and
 search persistence, direct step links, lazy long outputs, full-text search,
 download links, and a retry after a failed chunk request.

@@ -195,7 +195,12 @@
         await load();
       }
       search.addEventListener('input', () => { limit = 300; searchCollapsed.clear(); renderList(); });
-      await show(files.find(file => file.parts.length && file.bytes > 0) || files[0]);
+      // Repeated judge runs also contain reward.json. The root file is the
+      // selected final reward; nested receipts must not become the default.
+      const finalReward = group === 'verifier'
+        ? files.find(file => file.name === 'reward.json' && file.parts.length && file.bytes > 0)
+        : null;
+      await show(finalReward || files.find(file => file.parts.length && file.bytes > 0) || files[0]);
     } catch {
       loaded.delete(group);
       container.replaceChildren(el('p', 'Files are unavailable. The result summary is still available.', 'file-status'), button('Retry', () => open(group)));

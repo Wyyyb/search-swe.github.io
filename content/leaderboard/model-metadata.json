@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-09",
+  "models": {
+    "openai/gpt-6-luna": {
+      "release_date": "2026-09-22",
+      "source": "https://openrouter.ai/openai/gpt-6-luna"
+    },
+    "openai/gpt-6.1-terra": {
+      "release_date": "2026-10-26",
+      "source": "https://developers.openai.com/api/docs/changelog"
+    }
+  }
+}

@@ -24,7 +24,7 @@ const money = value => value.toLocaleString('en-US', {style: 'currency', currenc
     assert.equal(await page.locator('#panel-pareto').isVisible(), false);
     assert.match(await page.locator('thead th').last().innerText(), /Cost/);
     assert.match(await page.locator('.cost-note').innerText(), /estimated.*official API rates/);
-    assert.deepEqual(await page.locator('tbody .cost-cell').allTextContents(), ['$20.51', '$20.92', '$9.76']);
+    assert.deepEqual(await page.locator('tbody .cost-cell').allTextContents(), ['$232.30', '$13.78']);
     for (const direction of ['asc', 'desc']) {
       await page.locator('#sort').selectOption(`cost-${direction}`);
       const expected = totals('all').sort((a, b) => (a.cost - b.cost) * (direction === 'asc' ? 1 : -1));
@@ -35,21 +35,21 @@ const money = value => value.toLocaleString('en-US', {style: 'currency', currenc
     assert.equal(await page.locator('#view-pareto').getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('#panel-table').isVisible(), false);
     assert.equal(await page.locator('.sort-label').isVisible(), false);
-    assert.equal(await page.locator('.pareto-point').count(), 3);
+    assert.equal(await page.locator('.pareto-point').count(), 2);
     assert(await page.locator('.pareto-heading').evaluate(node => {
       const title = node.querySelector('h2').getBoundingClientRect();
       const key = node.querySelector('.pareto-key').getBoundingClientRect();
       return Math.abs(title.y + title.height / 2 - key.y - key.height / 2) < 1;
     }));
-    assert.deepEqual((await page.locator('.pareto-point[data-frontier="true"]').evaluateAll(nodes => nodes.map(n => n.dataset.entry))).map(id => byId.get(id).model).sort(), ['openai/gpt-6-luna', 'xiaomi/mimo-v2.6-flash']);
+    assert.deepEqual((await page.locator('.pareto-point[data-frontier="true"]').evaluateAll(nodes => nodes.map(n => n.dataset.entry))).map(id => byId.get(id).model).sort(), ['openai/gpt-6-luna', 'openai/gpt-6.1-terra']);
     await page.locator('.pareto-point').first().hover();
     assert.equal(await page.locator('.pareto-tooltip').isVisible(), true);
     await page.locator('#filter').fill('glm');
     assert.equal(await page.locator('.pareto-point').count(), 0);
     assert.equal(await page.locator('#pareto-empty').isVisible(), true);
-    await page.locator('#filter').fill('deepseek');
+    await page.locator('#filter').fill('terra');
     assert.equal(await page.locator('.pareto-point').count(), 1);
-    assert.equal(await page.locator('.pareto-point').getAttribute('data-frontier'), 'false');
+    assert.equal(await page.locator('.pareto-point').getAttribute('data-frontier'), 'true');
     await page.locator('#filter').fill('no-such-model');
     assert.equal(await page.locator('#pareto-empty').isVisible(), true);
     await page.locator('#filter').fill('');
@@ -87,7 +87,7 @@ const money = value => value.toLocaleString('en-US', {style: 'currency', currenc
     await page.setViewportSize({width: 390, height: 844});
     await page.waitForTimeout(150);
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-    assert.equal(await page.locator('.pareto-legend-item').count(), 3);
+    assert.equal(await page.locator('.pareto-legend-item').count(), 2);
     assert(!(await page.locator('#pareto-chart').innerHTML()).match(/NaN|Infinity/));
     await page.locator('#view-table').click();
     await page.locator('.table-frame').evaluate(node => { node.scrollLeft = node.scrollWidth; });
@@ -138,7 +138,7 @@ const money = value => value.toLocaleString('en-US', {style: 'currency', currenc
     }
     assert(!requests.some(url => url.includes('huggingface.co')));
     await noJS.goto(`${origin}/leaderboard/`);
-    assert.deepEqual(await noJS.locator('tbody .cost-cell').allTextContents(), ['$20.51', '$20.92', '$9.76']);
+    assert.deepEqual(await noJS.locator('tbody .cost-cell').allTextContents(), ['$232.30', '$13.78']);
     assert.equal(await noJS.locator('.leaderboard-tabs').isVisible(), false);
     await noJS.close();
     assert.deepEqual(errors, []);

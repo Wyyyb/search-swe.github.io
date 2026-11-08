@@ -40,10 +40,9 @@ class CostTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 costs.request_cost(usage, self.luna)
 
-    def test_standard_vendor_rates(self):
+    def test_selected_model_long_context_rates(self):
         usage = tokens(1000000, 800000, 0, 100000)
-        expected = {'deepseek/deepseek-v4.1-flash-1017': '0.0924',
-                    'xiaomi/mimo-v2.6-flash': '0.05824'}
+        expected = {'openai/gpt-6-luna': '0.131', 'openai/gpt-6.1-terra': '1.23'}
         for model, value in expected.items():
             self.assertEqual(costs.request_cost(usage, self.prices['models'][model]), Decimal(value))
 

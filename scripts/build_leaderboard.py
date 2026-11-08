@@ -64,13 +64,13 @@ def score_cell(score):
 
 def page(title, body, kind, data, snapshot):
     embedded = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
-    local_label = 'Local preview · ' if snapshot.get('data_source', {}).get('provider', 'local') == 'local' else ''
+    local_label = 'Local preview · ' if snapshot.get('data_source', {}).get('provider', 'local') in {'local', 'preview'} else ''
     return f'''<!doctype html>
 {MARKER}
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)} — Search-SWE</title><meta name="description" content="Search-SWE evaluation results and real coding agent trajectories.">
 <link rel="icon" href="/assets/logo.png"><link rel="preload" href="/assets/fonts/Geist.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/home-sections.css?v=8"><link rel="stylesheet" href="/leaderboard.css?v=23">
-{'<script src="/leaderboard-pareto.js?v=4" defer></script>' if kind == 'leaderboard' else ''}<script src="/leaderboard.js?v=8" defer></script>{'<script src="/trajectory-viewer.js?v=10" defer></script><script src="/trial-files.js?v=3" defer></script>' if kind == 'trial' else ''}</head>
+{'<script src="/leaderboard-pareto.js?v=4" defer></script>' if kind == 'leaderboard' else ''}<script src="/leaderboard.js?v=8" defer></script>{'<script src="/trajectory-viewer.js?v=10" defer></script><script src="/trial-files.js?v=4" defer></script>' if kind == 'trial' else ''}</head>
 <body id="top" data-page="{kind}"><a class="skip-link" href="#main-content">Skip to content</a>
 <header class="home-header"><div class="home-header-inner"><a class="home-brand" href="/"><img src="/assets/logo.png" width="32" height="32" alt=""><span>Search-SWE</span></a>
 <nav class="home-nav" aria-label="Main navigation"><a href="/">Overview</a><a href="/evaluation/">Run</a><a href="/leaderboard/" aria-current="page">Leaderboard</a><a href="/tasks/">Tasks</a><a href="https://github.com/VectorSpaceLab/Search-SWE" target="_blank" rel="noreferrer">GitHub ↗</a></nav></div></header>
@@ -100,7 +100,7 @@ def methodology(task_scores=False):
 
 
 def cost_note(snapshot):
-    return f'<p class="cost-note">Cost is estimated from recorded agent tokens at <a href="/content/leaderboard/official-pricing.json">official API rates</a> in USD ({snapshot["cost_methodology"]["as_of"]}; DeepSeek off-peak pricing).</p>'
+    return f'<p class="cost-note">Cost is estimated from recorded agent tokens at <a href="/content/leaderboard/official-pricing.json">official API rates</a> in USD ({snapshot["cost_methodology"]["as_of"]}; standard processing, including cache writes and per-request long-context rates).</p>'
 
 
 def sort_heading(label, key, css='', active=False):
@@ -187,6 +187,10 @@ def trial_page(trial, entry, snapshot, siblings):
     def files(group):
         return f'<div class="trial-files" data-file-group="{group}"><p class="file-status">Select this tab to browse the saved files.</p><noscript>Enable JavaScript to browse individual files.</noscript></div>'
 
+    notes = ''.join(f'<p>{esc(trial[key])}</p>' for key in ('agent_time_basis', 'usage_note') if trial.get(key))
+    qualification = trial.get('qualification')
+    qualification_html = (f'<details class="evidence-summary"><summary>Recorded qualification notes</summary><pre class="json-block">{esc(json.dumps(qualification, indent=2, ensure_ascii=False))}</pre></details>'
+                          if qualification else '')
     body = f'''<nav class="breadcrumbs"><a href="/leaderboard/">Leaderboard</a><span>/</span><a id="back-entry" href="/leaderboard/entries/{entry['id']}/">{esc(entry['name'])}</a><span>/ Trial</span></nav>
 <div class="eyebrow">{task['hardware'].upper()} TASK <span class="status-valid">Valid result</span></div><h1 class="trial-title">{esc(task['title'])}</h1>
 <p class="entry-subtitle">{esc(entry['name'])} <span class="dot">·</span> {esc(configuration['agent'])} <span class="inline-meta">(v{esc(configuration['version'].removeprefix('v'))})</span> <span class="dot">·</span> reasoning effort {esc(configuration['effort'])}</p>
@@ -198,8 +202,8 @@ def trial_page(trial, entry, snapshot, siblings):
 <div class="trajectory-tools" hidden><form id="trace-search"><label for="trace-query">Search full trajectory</label><div><input id="trace-query" type="search" placeholder="Words in messages, tool inputs or outputs…"><button type="submit">Search</button></div></form><label>Step type<select id="trace-type"><option value="all">All steps</option><option value="agent">Agent</option><option value="tools">Tool calls</option><option value="user">User</option><option value="system">System</option></select></label><button id="clear-search">Clear</button></div>
 <p id="trace-status" class="trace-status" role="status">Loading trajectory…</p><div class="trajectory-feed"><button id="load-earlier" hidden>Load earlier steps</button><div id="step-content" class="step-content"></div><div id="trace-more" class="trace-more"><button id="load-next" hidden>Load more steps</button><p id="feed-status" role="status"></p></div></div></section>
 <section id="panel-agent" class="file-panel" role="tabpanel" aria-labelledby="tab-agent">{files('agent')}
-<details class="evidence-summary"><summary>Coding time &amp; token usage</summary><dl class="detail-list"><div><dt>Original agent completion</dt><dd>{esc(trial['agent_status'] or 'Not recorded')}</dd></div><div><dt>Coding started</dt><dd>{esc(trial['started_at'] or '—')}</dd></div><div><dt>Coding finished</dt><dd>{esc(trial['finished_at'] or '—')}</dd></div>{token_rows}</dl><p class="fineprint">Input includes cached input; output is counted once. Auxiliary reasoning counts are shown as recorded. Regrading does not repeat coding usage.</p></details></section>
-<section id="panel-verifier" class="file-panel" role="tabpanel" aria-labelledby="tab-verifier">{files('verifier')}<noscript><p>Final selected score: {trial['score']:.4f} / 100</p><pre class="json-block">{esc(json.dumps(trial['reward'],indent=2,ensure_ascii=False))}</pre></noscript></section>
+<details class="evidence-summary"><summary>Coding time &amp; token usage</summary><dl class="detail-list"><div><dt>Original agent completion</dt><dd>{esc(trial['agent_status'] or 'Not recorded')}</dd></div><div><dt>Coding started</dt><dd>{esc(trial['started_at'] or '—')}</dd></div><div><dt>Coding finished</dt><dd>{esc(trial['finished_at'] or '—')}</dd></div>{token_rows}</dl>{notes}<p class="fineprint">Input includes cached input; output is counted once. Auxiliary reasoning counts are shown as recorded. Regrading does not repeat coding usage.</p></details></section>
+<section id="panel-verifier" class="file-panel" role="tabpanel" aria-labelledby="tab-verifier">{files('verifier')}{qualification_html}<noscript><p>Final selected score: {trial['score']:.4f} / 100</p><pre class="json-block">{esc(json.dumps(trial['reward'],indent=2,ensure_ascii=False))}</pre></noscript></section>
 <section id="panel-config" role="tabpanel" aria-labelledby="tab-config"><h2>Configuration</h2><details class="evidence-summary"><summary>Evaluation settings summary</summary><pre class="json-block">{esc(json.dumps(configuration,indent=2))}</pre></details>{files('config')}</section>
 <section id="panel-lock" role="tabpanel" aria-labelledby="tab-lock"><h2>Resolved configuration</h2>{files('lock')}</section>
 <section id="panel-log" role="tabpanel" aria-labelledby="tab-log"><h2>Trial log</h2>{files('log')}</section>

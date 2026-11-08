@@ -4,31 +4,94 @@
 从公开的 HF Dataset [`search-swe/trajectories`](https://huggingface.co/datasets/search-swe/trajectories)
 匿名按需读取。浏览器不需要 HF Token。
 
-Cost 按官网保存的官方 API 美元价目表，使用选中 coding 请求的 token 用量估算。
-`content/leaderboard/official-pricing.json` 保存价格、档位规则及官方来源；
-`content/leaderboard/costs.json` 保存按请求去重后的逐 trial 费用，并绑定原始结果快照。
-网站构建会生成带费用的 `/leaderboard/results.json` 下载文件，轨迹 URL 继续使用
-已验证的 HF commit。价格更新不需要重传轨迹，也不改写既有 HF 快照。
+## 当前更新：Luna + Terra 的 94 条最新轨迹
 
-更新选中结果或价目表后，在生成官网页面之前重算费用：
+2026-11-09 版本只展示 `openai/gpt-6-luna` 和 `openai/gpt-6.1-terra`，
+每个模型 47/47 道题。数据源：
+`/data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/final-trajectories`。
+旧模型结果、旧 snapshot 和旧 trial 页面已从本地官网替换。
+
+HF 上传、旧轨迹清理和全部校验已完成，官网数据已固定到提交
+[`1f675a76e0eb10ca5dfb514287c836904c923f18`](https://huggingface.co/datasets/search-swe/trajectories/commit/1f675a76e0eb10ca5dfb514287c836904c923f18)。
+32,470 个公开文件的哈希、大小及匿名下载/CORS 检查均已通过，旧 release 已从当前树删除。
+下列命令保留用于同一版本的幂等复核或中断恢复，正常情况下不必再次执行：
 
 ```bash
-python scripts/leaderboard_costs.py --usage /data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/traj-analysis/leaderboard-data/usage.json
-python scripts/build_leaderboard.py --production
+python scripts/replace_hf_trajectories.py --apply
 ```
 
-费用重算只读取本地用量，不调用模型或账户账单接口。普通网站构建直接使用已提交的
-费用补充文件；如果结果或价目表发生变化而费用尚未重算，构建会明确失败。
+仓库查询、分页清单和哈希核验使用已有 HF 登录，公开下载/CORS 检查仍不携带凭证。
+遇到 429 时，脚本遵守 `Retry-After` 或 `RateLimit` 的重置时间等待；没有这些头时
+按 60、120、240、300 秒退避，最多重试六次，并打印等待进度。
+目录扫描只重试当前 HTTP 页，不重新扫描整棵目录。此修复不改变发布包或删除计划，
+先前在仓库查询阶段遇到 429 的执行可直接用同一命令重试，无需重新导出。
 
-## GLM 5.3 Flash 下架（已完成）
+脚本和计划将目标固定为 `search-swe/trajectories`。本次操作范围：
 
-2026-11-04 从网站移除 `z-ai/glm-5.3-flash`。当前网站为 **47 道题、3 个模型、
+- 删除旧目录 `releases/2026-10-30-3090361873/`：44,952 文件，1,730,574,592 字节。
+- 上传 `.build/hf-trajectories-luna-terra/` 的公开包：32,469 个清单内文件及清单本身，约 1.04 GiB，94 条轨迹。
+- 更新 Dataset README 和 `publication.json.gz`。保留 `.gitattributes` 和其他非轨迹文件。
+- 验证成功后，自动更新 `content/leaderboard/storage.json` 并生成 98 个 HTML 页面及结果 JSON。
+
+运行过程先上传新 release，校验所有远端文件的大小、Git/LFS 哈希、匿名下载和 CORS，
+再以固定父提交把旧目录删除和新元数据提交在一起。上传或校验失败不会先删掉旧数据。
+脚本会检查旧文件是否被其他人修改；发现并发改动则停止清理。中断后重跑同一命令即可：
+已上传文件可续传，已成功但回执丢失的提交会被识别并继续验证。
+
+删除作用于 HF 当前版本，历史提交保留，不删除整个 dataset、不重写历史。
+脚本不会修改原始评测目录，也不会执行 GitHub commit、push 或网站部署。
+HF 验证完成后才可提交官网变更；部署前运行：
+
+```bash
+python scripts/build_leaderboard.py --production --check
+```
+
+不带 `--apply` 只核对本地包和操作范围，不发出 HF 请求或修改远端。
+依赖已安装；换机器时用 `python -m pip install -r scripts/requirements-hf.txt`。
+
+## 当前版本的本地重建与审计
+
+```bash
+python scripts/import_final_results.py
+python scripts/replace_hf_trajectories.py --prepare
+python scripts/import_final_results.py --check
+python scripts/leaderboard_costs.py --usage .build/hf-trajectories-luna-terra.usage.json --check
+python scripts/build_leaderboard.py --check
+```
+
+`--prepare` 仅通过只读 HF 请求记录基准版本和删除范围。已有计划会重新校验，
+不会默默替换已审核的目标。新归档应使用新的 `--package` 和 `--plan` 路径。
+本次计划为 `.build/hf-replacement-luna-terra.json`；完成回执为相邻的
+`.applied.json` 和 `hf-trajectories-luna-terra-uploaded.json`。备份保存在
+`.build/hf-trajectories-luna-terra.previous-site.json`。
+
+评分沿 `FINAL_RESULT.json` 的最终 reward 指针读取，支持标量 reward，
+用量来自原始 coding session 中按 response ID 去重的 `token_usage_record`。
+两条原生汇总少计末尾响应的轨迹使用完整请求记录，具体说明保存在 Agent tab。
+重评分只替换 verifier，不重复计入解题用量；缺少原始结束时间的三条轨迹显示缺失时长。
+官方 qualification 标记和限制说明保留在 Verifier tab 和结果下载中。
+
+Cost 采用 `official-pricing.json` 保存的官方标准处理 USD 价格，包含缓存读写和
+逐请求长上下文档位。2026-11-09 核实的来源为
+[Luna](https://developers.openai.com/api/docs/models/gpt-6-luna)、
+[Terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra) 和
+[官方价目表](https://developers.openai.com/api/docs/pricing)。
+不是账户账单，也不包含 verifier、任务内 API 或基础设施费用。
+仅更新价格时可以单独重算 `leaderboard_costs.py`，无需重新上传轨迹。
+
+公开包包含全部 94 个 ATIF 下载及 94 份原始 session 文本导出；预览与下载使用
+相同的脱敏文本。主机路径替换为文档化别名，凭证和环境值脱敏。
+二进制索引、大模型文件等只列名称、大小和不可预览原因，不上传其内容。
+
+## 历史记录：2026-11-04 GLM 下架
+
+2026-11-04 从网站移除 `z-ai/glm-5.3-flash`。当时网站为 **47 道题、3 个模型、
 141 份结果**；其他模型的结果、费用和 entry/trial 链接不变。原始 jobs 不修改。
 
-HF 删除及校验已完成，当前固定版本为
+当时 HF 删除及校验完成，固定版本为
 [`824b6d863b69b1f86b9d73b365dca28af200de7c`](https://huggingface.co/datasets/search-swe/trajectories/commit/824b6d863b69b1f86b9d73b365dca28af200de7c)。
-`storage.json` 已切换到该版本并移除 pending 标记。146 个 HTML 页面及结果 JSON
-均使用这个固定版本；网站仓库的部署仍需单独提交和推送。
+当时 `storage.json` 切换到该版本并移除 pending 标记，146 个 HTML 页面及结果 JSON
+使用该固定版本。本节为历史记录，现行版本见本文开头。
 
 以下命令保留用于离线审计或中断后的重试，正常情况下无需再次执行删除：
 
@@ -95,7 +158,7 @@ python scripts/build_leaderboard.py --production --check
 删除针对 HF 当前版本；HF 的历史提交仍会保留旧文件。本脚本不重写仓库历史。
 旧官网在本地变更发布之前仍会引用原来的固定 SHA。
 
-## 完整发布包的上传命令
+## 旧版追加发布流程（不会清除旧轨迹）
 
 以下用于后续新增评测的完整发布。先按下一节准备与本地结果匹配的新包，再运行：
 
@@ -135,9 +198,9 @@ python scripts/build_leaderboard.py --production --check
 python scripts/upload_hf_release.py --package .build/hf-trajectories-next --verify-revision FULL_40_CHARACTER_COMMIT_SHA
 ```
 
-## 重建公开发布包
+## 旧归档格式的重建流程（历史参考）
 
-当前下架更新已完成。以后评测数据更新时，先更新网站结果和费用，再指定一个新的空目录：
+以下仅适用于旧版带 `traj-analysis/leaderboard-data` 的归档。当前归档使用上文的新导入器。历史命令：
 
 ```bash
 python scripts/import_results.py --jobs /path/to/Search-SWE/jobs
