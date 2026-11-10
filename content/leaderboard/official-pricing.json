@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "as_of": "2026-11-09",
+  "as_of": "2026-11-11",
   "currency": "USD",
   "unit": "USD per million tokens",
   "policy": "Standard real-time USD API list prices with 30-minute cache writes. Long-context rates apply per request above 272,000 input tokens. No batch, fast-mode, account or regional adjustments.",
@@ -42,6 +42,26 @@
           "cached_input": "0.10",
           "cache_write_input": "2.50",
           "output": "7.50"
+        }
+      },
+      "note": "Standard processing with 30-minute cache writes. Above 272,000 input tokens the entire request uses 2x input/cache and 1.5x output prices."
+    },
+    "gpt-6.1-sol": {
+      "official_model": "gpt-6.1-sol",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+      "rates": {
+        "input": "2.00",
+        "cached_input": "0.10",
+        "cache_write_input": "2.50",
+        "output": "10.00"
+      },
+      "long_context": {
+        "above_input_tokens": 272000,
+        "rates": {
+          "input": "4.00",
+          "cached_input": "0.20",
+          "cache_write_input": "5.00",
+          "output": "15.00"
         }
       },
       "note": "Standard processing with 30-minute cache writes. Above 272,000 input tokens the entire request uses 2x input/cache and 1.5x output prices."

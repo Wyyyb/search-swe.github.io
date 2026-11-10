@@ -12,7 +12,6 @@ import argparse
 import re
 from pathlib import Path
 
-from import_final_results import DEFAULT_PACKAGE, MODELS
 from hf_network import authenticated_api, retry_429
 from import_results import ROOT, digest, encode, read, write
 from prepare_hf_release import referenced_files
@@ -20,6 +19,9 @@ from publication import REPO_ID, fingerprints, load_package
 from upload_hf_release import activate, check_site_snapshot, verify_remote
 
 DEFAULT_PLAN = ROOT / '.build/hf-replacement-luna-terra.json'
+# Keep this historical destructive workflow scoped to its original two-model plan.
+DEFAULT_PACKAGE = ROOT / '.build/hf-trajectories-luna-terra'
+MODELS = ('openai/gpt-6-luna', 'openai/gpt-6.1-terra')
 
 
 def remote_files(api, revision):

@@ -4,84 +4,92 @@
 从公开的 HF Dataset [`search-swe/trajectories`](https://huggingface.co/datasets/search-swe/trajectories)
 匿名按需读取。浏览器不需要 HF Token。
 
-## 当前更新：Luna + Terra 的 94 条最新轨迹
+## 当前更新：加入 GPT-6.1 Sol，三个模型共 141 条轨迹
 
-2026-11-09 版本只展示 `openai/gpt-6-luna` 和 `openai/gpt-6.1-terra`，
-每个模型 47/47 道题。数据源：
+2026-11-11 版本展示 `gpt-6.1-sol`、`openai/gpt-6.1-terra` 和
+`openai/gpt-6-luna`，每个模型 47/47 道题（24 CPU、23 GPU）。
+Sol 平均分为 46.4303712901；Terra 的 42.5322347241 和 Luna 的
+13.1030991867 保持不变。数据源：
 `/data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/final-trajectories`。
-旧模型结果、旧 snapshot 和旧 trial 页面已从本地官网替换。
 
-HF 上传、旧轨迹清理和全部校验已完成，官网数据已固定到提交
-[`1f675a76e0eb10ca5dfb514287c836904c923f18`](https://huggingface.co/datasets/search-swe/trajectories/commit/1f675a76e0eb10ca5dfb514287c836904c923f18)。
-32,470 个公开文件的哈希、大小及匿名下载/CORS 检查均已通过，旧 release 已从当前树删除。
-下列命令保留用于同一版本的幂等复核或中断恢复，正常情况下不必再次执行：
+本次上传及全部校验已完成，固定 HF 提交为
+[`72369be64bb94af4124c804d700cfd16bbd4a1ca`](https://huggingface.co/datasets/search-swe/trajectories/commit/72369be64bb94af4124c804d700cfd16bbd4a1ca)。
+52,179 个公开文件的大小、哈希和匿名下载/CORS 校验通过。完成回执为
+`.build/hf-trajectories-luna-terra-sol-uploaded.json`。
+
+一条命令准备公开包、上传、校验并生成生产页面：
 
 ```bash
-python scripts/replace_hf_trajectories.py --apply
+python scripts/publish_final_results.py --upload
 ```
 
-仓库查询、分页清单和哈希核验使用已有 HF 登录，公开下载/CORS 检查仍不携带凭证。
-遇到 429 时，脚本遵守 `Retry-After` 或 `RateLimit` 的重置时间等待；没有这些头时
-按 60、120、240、300 秒退避，最多重试六次，并打印等待进度。
-目录扫描只重试当前 HTTP 页，不重新扫描整棵目录。此修复不改变发布包或删除计划，
-先前在仓库查询阶段遇到 429 的执行可直接用同一命令重试，无需重新导出。
+不带 `--upload` 只准备和校验本地预览，不访问 HF。
+本次向 `search-swe/trajectories` 添加新的三模型 release，保留之前已发布的
+Luna/Terra release 和固定版本链接。公开包共 52,179 个文件，约 1.64 GiB。
+脚本不会删除旧目录，也不会执行 Git commit/push。
+所有公开文件经过远端大小和 Git/LFS 哈希校验，匿名下载和 CORS 校验通过后，
+才更新 `content/leaderboard/storage.json` 的固定提交，并生成 146 个 HTML 页面及结果 JSON。
 
-脚本和计划将目标固定为 `search-swe/trajectories`。本次操作范围：
-
-- 删除旧目录 `releases/2026-10-30-3090361873/`：44,952 文件，1,730,574,592 字节。
-- 上传 `.build/hf-trajectories-luna-terra/` 的公开包：32,469 个清单内文件及清单本身，约 1.04 GiB，94 条轨迹。
-- 更新 Dataset README 和 `publication.json.gz`。保留 `.gitattributes` 和其他非轨迹文件。
-- 验证成功后，自动更新 `content/leaderboard/storage.json` 并生成 98 个 HTML 页面及结果 JSON。
-
-运行过程先上传新 release，校验所有远端文件的大小、Git/LFS 哈希、匿名下载和 CORS，
-再以固定父提交把旧目录删除和新元数据提交在一起。上传或校验失败不会先删掉旧数据。
-脚本会检查旧文件是否被其他人修改；发现并发改动则停止清理。中断后重跑同一命令即可：
-已上传文件可续传，已成功但回执丢失的提交会被识别并继续验证。
-
-删除作用于 HF 当前版本，历史提交保留，不删除整个 dataset、不重写历史。
-脚本不会修改原始评测目录，也不会执行 GitHub commit、push 或网站部署。
-HF 验证完成后才可提交官网变更；部署前运行：
+中断后可以直接使用原包续传，无需重新读取可能已更新的归档：
 
 ```bash
+python scripts/upload_hf_release.py --package .build/hf-trajectories-luna-terra-sol --upload
+```
+
+仓库查询和清单校验使用现有 HF 登录，公开下载不携带凭证。429 遵守
+`Retry-After` / `RateLimit`；缺少重试头时按 60、120、240、300 秒退避，
+最多重试六次。分页只重试当前页。依赖：
+`python -m pip install -r scripts/requirements-hf.txt`。
+
+## 本地重建与审计
+
+```bash
+python scripts/publish_final_results.py
+python scripts/import_final_results.py --check
+python scripts/leaderboard_costs.py --usage .build/hf-trajectories-luna-terra-sol.usage.json --check
+python -m unittest discover -s scripts -p 'test_*.py'
+python scripts/build_tasks.py --check
+```
+
+公开包、原始用量回执和网站备份位于 `.build/hf-trajectories-luna-terra-sol*`，
+不会进入 Git。若源归档已经变化，应指定新的 `--package` 路径，不覆盖旧包。
+本地预览重建会切换 storage 配置；已上传版本可用完整 HF SHA 重新验证并激活：
+
+```bash
+python scripts/upload_hf_release.py --package .build/hf-trajectories-luna-terra-sol --verify-revision <FULL_HF_SHA>
 python scripts/build_leaderboard.py --production --check
 ```
 
-不带 `--apply` 只核对本地包和操作范围，不发出 HF 请求或修改远端。
-依赖已安装；换机器时用 `python -m pip install -r scripts/requirements-hf.txt`。
+评分沿 `FINAL_RESULT.json` 的最终 reward 指针读取，原生 reward × 100 必须
+与索引分数相符。用量来自原始 coding session 中按 response ID 去重的
+`token_usage_record`，并与最终 thread 累计计数核对。ATIF 汇总落后时使用完整
+请求回执，具体说明保存在 Agent tab。重评分不会重复计入解题用量；
+缺少原始结束时间的三条既有轨迹仍显示缺失时长。
 
-## 当前版本的本地重建与审计
+Sol 使用 OpenAI 直连，Luna/Terra 使用 OpenRouter；provider 和 session ID
+均与原生会话元数据核对。Sol 的 `large-scale-formula-retrieval` 原始会话位于
+`agent/original-codex-sessions/`，其余会话位于 `agent/sessions/`，两者均按归档
+文件清单验证并导出。qualification 标记和限制保留在 Verifier tab 和结果下载中。
 
-```bash
-python scripts/import_final_results.py
-python scripts/replace_hf_trajectories.py --prepare
-python scripts/import_final_results.py --check
-python scripts/leaderboard_costs.py --usage .build/hf-trajectories-luna-terra.usage.json --check
-python scripts/build_leaderboard.py --check
-```
+Cost 使用 `official-pricing.json` 保存的官方标准处理 USD 价格，包含缓存读写及
+逐请求长上下文档位。Sol 价格和 2026-09-29 发布日期来自
+[模型文档](https://developers.openai.com/api/docs/models/gpt-6.1-sol)及
+[官方更新日志](https://developers.openai.com/api/docs/changelog)，核实日期为 2026-11-11。
+其他模型使用相同口径。费用是按官方费率估算的解题开销，不是账户账单，
+不包含 verifier、任务内 API 或基础设施。仅更新价格可单独重算，不必重传轨迹。
 
-`--prepare` 仅通过只读 HF 请求记录基准版本和删除范围。已有计划会重新校验，
-不会默默替换已审核的目标。新归档应使用新的 `--package` 和 `--plan` 路径。
-本次计划为 `.build/hf-replacement-luna-terra.json`；完成回执为相邻的
-`.applied.json` 和 `hf-trajectories-luna-terra-uploaded.json`。备份保存在
-`.build/hf-trajectories-luna-terra.previous-site.json`。
+公开包包含全部 141 个 ATIF 下载及 141 份原始会话文本导出；预览与下载
+使用相同的脱敏文本。主机路径替换为别名，凭证和环境值脱敏。
+二进制索引、权重等只列名称、大小和不可预览原因，不上传其内容。
 
-评分沿 `FINAL_RESULT.json` 的最终 reward 指针读取，支持标量 reward，
-用量来自原始 coding session 中按 response ID 去重的 `token_usage_record`。
-两条原生汇总少计末尾响应的轨迹使用完整请求记录，具体说明保存在 Agent tab。
-重评分只替换 verifier，不重复计入解题用量；缺少原始结束时间的三条轨迹显示缺失时长。
-官方 qualification 标记和限制说明保留在 Verifier tab 和结果下载中。
+## 历史记录：2026-11-09 Luna/Terra 替换
 
-Cost 采用 `official-pricing.json` 保存的官方标准处理 USD 价格，包含缓存读写和
-逐请求长上下文档位。2026-11-09 核实的来源为
-[Luna](https://developers.openai.com/api/docs/models/gpt-6-luna)、
-[Terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra) 和
-[官方价目表](https://developers.openai.com/api/docs/pricing)。
-不是账户账单，也不包含 verifier、任务内 API 或基础设施费用。
-仅更新价格时可以单独重算 `leaderboard_costs.py`，无需重新上传轨迹。
-
-公开包包含全部 94 个 ATIF 下载及 94 份原始 session 文本导出；预览与下载使用
-相同的脱敏文本。主机路径替换为文档化别名，凭证和环境值脱敏。
-二进制索引、大模型文件等只列名称、大小和不可预览原因，不上传其内容。
+此前的两模型版本已完成上传、旧轨迹清理和校验，HF 固定提交为
+[`1f675a76e0eb10ca5dfb514287c836904c923f18`](https://huggingface.co/datasets/search-swe/trajectories/commit/1f675a76e0eb10ca5dfb514287c836904c923f18)。
+当时共 94 条轨迹、32,470 个公开文件，旧 `releases/2026-10-30-3090361873/`
+目录从 HF 当前树移除，历史提交保留。该过程由 `replace_hf_trajectories.py`
+和 `.build/hf-replacement-luna-terra.json` 记录。本次加入 Sol 使用新增 release
+流程，不再执行这个历史删除计划。
 
 ## 历史记录：2026-11-04 GLM 下架
 

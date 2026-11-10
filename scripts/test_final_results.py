@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from import_final_results import MODELS, coding_time, selected_rows, session_usage
+from import_final_results import MODELS, coding_provider, coding_session, coding_time, selected_rows, session_usage
 from import_results import export_trajectory, read
 
 
@@ -21,7 +21,7 @@ class CurrentArchiveTests(unittest.TestCase):
                     writer.writeheader()
                     writer.writerows(rows)
             save()
-            self.assertEqual(len(selected_rows(root, ['one', 'two'])), 4)
+            self.assertEqual(len(selected_rows(root, ['one', 'two'])), 6)
             rows.pop(0)
             save()
             with self.assertRaisesRegex(ValueError, 'complete task catalog'):
@@ -56,6 +56,34 @@ class CurrentArchiveTests(unittest.TestCase):
         self.assertIsNone(coding_time(result, [start], [])[2])
         result['agent_execution'] = {'started_at': start, 'finished_at': finish}
         self.assertEqual(coding_time(result, [], [])[2], 120)
+
+    def test_recovered_session_directory_and_ambiguity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            recovered = root / 'agent/original-codex-sessions/2026/11/10/rollout.jsonl'
+            recovered.parent.mkdir(parents=True)
+            recovered.write_text('{}\n')
+            self.assertEqual(coding_session(root), recovered)
+            normal = root / 'agent/sessions/rollout.jsonl'
+            normal.parent.mkdir(parents=True)
+            normal.write_text('{}\n')
+            with self.assertRaisesRegex(ValueError, 'exactly one'):
+                coding_session(root)
+            recovered.unlink()
+            self.assertEqual(coding_session(root), normal)
+            normal.unlink()
+            with self.assertRaisesRegex(ValueError, 'exactly one'):
+                coding_session(root)
+
+    def test_provider_and_session_identity_follow_native_evidence(self):
+        events = [{'type': 'session_meta', 'payload': {'id': 'selected', 'model_provider': 'openai'}}]
+        self.assertEqual(coding_provider({'provider': 'direct'}, events, 'selected'), 'OpenAI')
+        with self.assertRaisesRegex(ValueError, 'identity/provider'):
+            coding_provider({'provider': 'openrouter'}, events, 'selected')
+        with self.assertRaisesRegex(ValueError, 'identity/provider'):
+            coding_provider({'provider': 'direct'}, events, 'another-session')
+        events[0]['payload']['model_provider'] = 'openrouter'
+        self.assertEqual(coding_provider({'provider': 'openrouter'}, events, 'selected'), 'OpenRouter')
 
     def test_empty_call_ids_do_not_join_unrelated_search_outputs(self):
         def step(i, outputs, calls=1):

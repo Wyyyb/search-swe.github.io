@@ -1,60 +1,63 @@
 # Leaderboard data and publication
 
-The current homepage contains **47 tasks (24 CPU, 23 GPU), two models,
-and 94 selected trials** from the 2026-11-09 final archive. GPT-6.1 Terra scores
-42.5322347241 and GPT-6 Luna scores 13.1030991867 on the 0–100 mean-task scale.
-`selection.json` explicitly allows these two models; other archived models are
-not imported. Old result snapshots and generated routes have been removed.
+The current homepage contains **47 tasks (24 CPU, 23 GPU), three models,
+and 141 selected trials** from the 2026-11-11 final archive. GPT-6.1 Sol scores
+46.4303712901, GPT-6.1 Terra scores 42.5322347241 and GPT-6 Luna scores
+13.1030991867 on the 0–100 mean-task scale. `selection.json` explicitly allows
+these models. Sol uses OpenAI directly; Luna and Terra use OpenRouter, as
+validated against the native session metadata. Their existing results are unchanged.
 
-The public package is `.build/hf-trajectories-luna-terra/`: 32,469 inventoried payload files plus the inventory itself,
-approximately 1.04 GiB. It includes all 94 ATIF trajectories and all 94 original
-coding session text exports, with credentials redacted and host paths normalized.
-Large binary artifacts remain listed by name and size without content downloads.
-Original benchmark records are never modified.
+The public package is `.build/hf-trajectories-luna-terra-sol/`: 52,178 inventoried
+payload files plus the inventory itself, approximately 1.64 GiB. It contains all
+141 ATIF trajectories and all 141 original coding session text exports, with
+credentials redacted and host paths normalized. Large binary artifacts remain
+listed by name and size without content downloads. Original benchmark records
+are never modified.
 
-The prepared replacement plan is `.build/hf-replacement-luna-terra.json`.
-It removes the old `releases/2026-10-30-3090361873/` directory from HF main
-(44,952 files, approximately 1.61 GiB), and replaces it with the new release.
-**Remote replacement is complete.** `storage.json` pins verified HF commit
-`1f675a76e0eb10ca5dfb514287c836904c923f18`. All 32,470 public files passed remote
-hash/size checks; anonymous JSON/gzip downloads and CORS checks passed. The old
-release directory is absent from the current HF tree. Production pages use only
-this immutable revision.
+**Publication is complete.** `storage.json` pins verified HF commit
+`72369be64bb94af4124c804d700cfd16bbd4a1ca`. All 52,179 public files passed remote hash/size checks
+and anonymous JSON/gzip download/CORS checks. The previous Luna/Terra release remains on HF.
 
-To reverify or finish an interrupted activation, run from this repository using the existing HF login:
+Prepare, upload, verify and build the production homepage with the existing HF login:
 
 ```bash
-python scripts/replace_hf_trajectories.py --apply
+python scripts/publish_final_results.py --upload
 ```
 
-This one command uploads and verifies the new release, commits old-release
-removal and new metadata together, verifies anonymous downloads and CORS, then
-pins `storage.json` to the actual immutable HF commit and builds production pages.
-Repeat the same command after interruption. It does not commit or push GitHub.
+Without `--upload`, this command prepares and checks the local preview only.
+The upload adds a new release to `search-swe/trajectories`, retaining previous
+HF releases and immutable links. It verifies every remote file's hash and size,
+anonymous JSON/gzip downloads and CORS, then pins `storage.json` to the verified
+commit and builds production pages. Git commit and push remain separate steps.
+The historical `replace_hf_trajectories.py` script remains scoped to the earlier
+Luna/Terra replacement; it is not used to add Sol.
+
+To resume an interrupted upload using the frozen package without reimporting:
+
+```bash
+python scripts/upload_hf_release.py --package .build/hf-trajectories-luna-terra-sol --upload
+```
+
 Hub metadata requests explicitly use the existing login. HTTP 429 responses wait
 for the server's reset time (or bounded exponential backoff); pagination retries
-the affected page. Public browser downloads remain anonymous. No package or plan
-rebuild is needed after a rate-limit error during the initial repository query.
-Historical HF commits remain accessible; the cleanup affects the current tree.
+the affected page. Public browser downloads remain anonymous.
 See [the publication guide](../../docs/leaderboard-publication.md) for details.
 
 To reproduce the local preparation from the current archive:
 
 ```bash
-python scripts/import_final_results.py
-python scripts/replace_hf_trajectories.py --prepare
+python scripts/publish_final_results.py
 python -m http.server 7788 --bind 127.0.0.1
 ```
 
 Open <http://localhost:7788/leaderboard/>. Reuse an existing server on that port.
 The importer reads `INDEX.csv`, each `FINAL_RESULT.json`, native result/reward,
-and original session receipts directly; no stale analysis directory is needed.
-The source file inventories authenticate all exported text and selected inputs.
-The package, original response usage, previous-site backup, plan and receipts are
-under `.build/` and excluded from Git. `release.json`, `costs.json`, and generated
-HTML contain the new compact website results. Production builds reject local
-preview URLs. Rebuilding a local preview requires reactivating the verified HF
-release before a production deployment.
+and original session receipts directly. It accepts both `agent/sessions/` and
+`agent/original-codex-sessions/`, requiring exactly one session with an identity
+matching the selected trajectory. Source inventories authenticate exported text
+and selected inputs. Packages, usage receipts and backups stay under `.build/`
+and are excluded from Git. Production builds reject local preview URLs.
+Rebuilding a local preview requires reactivating the verified HF release before deployment.
 
 ## Typography and result tables
 
@@ -86,7 +89,7 @@ Narrow screens scroll the table horizontally instead of shrinking its text.
   time. Verifier/task-internal API usage is excluded. Regrading uses original
   coding usage once. Missing values remain missing.
 - Cost sums selected coding responses at the frozen official USD API rates in
-  `official-pricing.json`, checked 2026-11-09. Both models use standard processing,
+  `official-pricing.json`, checked 2026-11-11. All three models use standard processing,
   30-minute cache writes, and per-request long-context rates above 272,000 input
   tokens. Cache reads/writes are subsets of input and charged once; reasoning
   is already included in output. Sources and pricing assumptions remain public.
@@ -228,7 +231,7 @@ unchanged; exported JSON contains no local host source paths in its metadata.
 python -m unittest discover -s scripts -p 'test_*.py'
 python scripts/import_final_results.py --check
 python scripts/build_leaderboard.py --check
-python scripts/leaderboard_costs.py --usage .build/hf-trajectories-luna-terra.usage.json --check
+python scripts/leaderboard_costs.py --usage .build/hf-trajectories-luna-terra-sol.usage.json --check
 python scripts/build_tasks.py --check
 node --check leaderboard.js
 node --check leaderboard-pareto.js

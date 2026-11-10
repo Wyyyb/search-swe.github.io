@@ -8,7 +8,7 @@ const {gunzipSync} = require('node:zlib');
 const {spawn, spawnSync} = require('node:child_process');
 const {chromium} = require('playwright');
 const root = path.resolve(__dirname, '..');
-const packageRoot = path.resolve(process.env.HF_PACKAGE || path.join(root, '.build/hf-trajectories-luna-terra'));
+const packageRoot = path.resolve(process.env.HF_PACKAGE || path.join(root, '.build/hf-trajectories-luna-terra-sol'));
 const origin = process.env.LEADERBOARD_ORIGIN || 'http://127.0.0.1:7788';
 const manifest = JSON.parse(gunzipSync(fs.readFileSync(path.join(packageRoot, 'publication.json.gz'))));
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'content/leaderboard/release.json')));
@@ -48,7 +48,7 @@ const server = http.createServer((req, res) => {
     assert(!config.includes('/root/Search-SWE'));
     assert((await page.locator('#page-data').textContent()).includes(dataOrigin));
     // Real selected trials include nested repeated-judge rewards before the root
-    // reward in the file inventory. Default to the final reward for both models.
+    // reward in the file inventory. Default to the final reward for every model.
     for (const selected of snapshot.trials.filter(t => t.task === 'agentic-search')) {
       await page.goto(`${origin}/leaderboard/trials/${selected.id}/?tab=verifier`);
       await page.locator('#panel-verifier .file-preview-footer').getByText('Complete file', {exact: true}).waitFor();
@@ -56,6 +56,15 @@ const server = http.createServer((req, res) => {
       const reward = JSON.parse(await page.locator('#panel-verifier .file-text').innerText());
       assert(Math.abs((typeof reward === 'number' ? reward : reward.reward) * 100 - selected.score) < 1e-7);
     }
+    const sol = snapshot.entries.find(e => e.model === 'gpt-6.1-sol');
+    await page.goto(`${origin}/leaderboard/entries/${sol.id}/`);
+    assert.deepEqual(await page.locator('tbody .provider-cell').allTextContents(), Array(47).fill('OpenAI'));
+    const recovered = snapshot.trials.find(t => t.entry === sol.id && t.task === 'large-scale-formula-retrieval');
+    await page.goto(`${origin}/leaderboard/trials/${recovered.id}/`);
+    await page.locator('.tool-call').first().waitFor();
+    const fileIndex = JSON.parse(fs.readFileSync(path.join(packageRoot, manifest.release_path, 'trials', recovered.id, 'files/index.json')));
+    const session = fileIndex.groups.agent.find(f => f.name.startsWith('original-codex-sessions/') && f.name.endsWith('.jsonl'));
+    assert(session && session.download && session.parts.length, 'Recovered original session must be publicly readable');
     const download = await page.locator('.download-links a').first().getAttribute('href');
     assert(download.startsWith(dataOrigin));
     const remoteHash = await page.evaluate(async url => {

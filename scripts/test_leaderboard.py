@@ -122,9 +122,10 @@ class SnapshotTests(unittest.TestCase):
     def test_fixed_coverage_tokens_and_expected_analysis_means(self):
         snapshot = self.snapshot
         expected = {'openai/gpt-6-luna': 13.103099186708066,
-                    'openai/gpt-6.1-terra': 42.53223472405557}
+                    'openai/gpt-6.1-terra': 42.53223472405557,
+                    'gpt-6.1-sol': 46.4303712900911}
         self.assertEqual(len(snapshot['tasks']), 47)
-        self.assertEqual(len(snapshot['trials']), 94)
+        self.assertEqual(len(snapshot['trials']), 141)
         self.assertEqual({entry['model'] for entry in snapshot['entries']}, set(expected))
         for entry in snapshot['entries']:
             trials = [t for t in snapshot['trials'] if t['entry'] == entry['id']]
@@ -138,7 +139,7 @@ class SnapshotTests(unittest.TestCase):
 
     def test_generated_routes_and_no_script_injection(self):
         pages = build.generate()
-        self.assertEqual(len(pages), 99)  # 98 pages plus the cost-enriched download.
+        self.assertEqual(len(pages), 147)  # 146 pages plus the cost-enriched download.
         for trial in self.snapshot['trials']:
             self.assertIn(build.ROOT / f'leaderboard/trials/{trial["id"]}/index.html', pages)
         rendered = build.page('<script>', '<p>test</p>', 'trial', {'message': '</script><script>alert(1)'}, self.snapshot)

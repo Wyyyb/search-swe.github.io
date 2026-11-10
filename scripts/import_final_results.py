@@ -1,7 +1,7 @@
-"""Prepare Luna/Terra public evidence directly from the current final archive.
+"""Prepare Luna/Terra/Sol public evidence directly from the current final archive.
 
 No evaluation jobs are changed and no network requests are made. Publication is
-a separate, explicit step in replace_hf_trajectories.py.
+a separate, explicit step in publish_final_results.py.
 """
 from __future__ import annotations
 
@@ -19,17 +19,18 @@ from leaderboard_costs import calculate
 from prepare_hf_release import finalize, referenced_files
 from publication import PublicText, load_package, safe_path
 
-MODELS = ('openai/gpt-6-luna', 'openai/gpt-6.1-terra')
+MODELS = ('openai/gpt-6-luna', 'openai/gpt-6.1-terra', 'gpt-6.1-sol')
 DEFAULT_FINAL = Path('/data/Search-SWE-Workspace/Search-SWE/run-eval-release/Search-SWE/jobs/final-trajectories')
-DEFAULT_PACKAGE = ROOT / '.build/hf-trajectories-luna-terra'
+DEFAULT_PACKAGE = ROOT / '.build/hf-trajectories-luna-terra-sol'
 CONTENT = ROOT / 'content/leaderboard'
 
 
 def selected_rows(final, tasks):
-    rows = [r for r in csv.DictReader((final / 'INDEX.csv').open()) if r['model'] in MODELS]
+    with (final / 'INDEX.csv').open() as source:
+        rows = [r for r in csv.DictReader(source) if r['model'] in MODELS]
     keys = [(r['task'], r['model']) for r in rows]
     if len(keys) != len(set(keys)) or set(keys) != {(t, m) for t in tasks for m in MODELS}:
-        raise ValueError('Luna and Terra must each cover exactly the complete task catalog')
+        raise ValueError('Luna, Terra and Sol must each cover exactly the complete task catalog')
     return sorted(rows, key=lambda r: (r['task'], r['model']))
 
 
@@ -38,6 +39,25 @@ def verified_bytes(path, expected):
     if len(data) != expected['bytes'] or digest(data) != expected['sha256']:
         raise ValueError(f'Archived source changed: {path.name}')
     return data
+
+
+def coding_session(trial_root):
+    # Some recovered native exports retain the original-codex-sessions name.
+    sessions = sorted(p for name in ('sessions', 'original-codex-sessions')
+                      for p in (trial_root / 'agent' / name).rglob('*.jsonl'))
+    if len(sessions) != 1:
+        raise ValueError('Expected exactly one original coding session per selected trial')
+    return sessions[0]
+
+
+def coding_provider(pointer, events, session_id):
+    metadata = [e['payload'] for e in events if e.get('type') == 'session_meta']
+    expected, label = {'openrouter': ('openrouter', 'OpenRouter'),
+                       'direct': ('openai', 'OpenAI')}[pointer['provider']]
+    if (len(metadata) != 1 or metadata[0].get('model_provider') != expected or
+            metadata[0].get('id') != session_id):
+        raise ValueError('Coding session identity/provider differs from the selected trajectory')
+    return label
 
 
 def session_usage(events):
@@ -94,10 +114,10 @@ def prepare(final, package):
     catalog = read(ROOT / 'content/tasks/catalog.json')
     rows = selected_rows(final, {t['name'] for t in catalog})
     if len(catalog) != 47:
-        raise ValueError('This publication expects 47 tasks and 94 selected trials')
+        raise ValueError('This publication expects 47 tasks and 141 selected trials')
     policy = read(CONTENT / 'selection.json')
     if policy.get('included_models') != list(MODELS):
-        raise ValueError('Website selection must explicitly contain only Luna and Terra')
+        raise ValueError('Website selection must explicitly contain only Luna, Terra and Sol')
     metadata = read(CONTENT / 'model-metadata.json')
     archive = read(final / 'MANIFEST.json')
     if archive['index_sha256'] != digest((final / 'INDEX.csv').read_bytes()):
@@ -105,7 +125,7 @@ def prepare(final, package):
     settings = {(s['task'], s['model']): s for s in archive['settings']}
     source_hashes = {'index': archive['index_sha256'], 'archive': digest((final / 'MANIFEST.json').read_bytes()),
                      'model_metadata': digest(encode(metadata)), 'selection': digest(encode(policy))}
-    release_id = policy['updated_at'] + '-luna-terra-' + digest(encode(source_hashes))[:10]
+    release_id = policy['updated_at'] + '-luna-terra-sol-' + digest(encode(source_hashes))[:10]
     release_path = 'releases/' + release_id
     if (package / 'publication.json.gz').exists():
         manifest = load_package(package)
@@ -169,10 +189,8 @@ def prepare(final, package):
         raw = json.loads(trajectory)
         if raw['agent']['model_name'] != row['model']:
             raise ValueError('Selected trajectory model differs')
-        sessions = sorted((trial_root / 'agent/sessions').rglob('*.jsonl'))
-        if len(sessions) != 1:
-            raise ValueError('Expected exactly one original coding session per selected trial')
-        events = (json.loads(line) for line in source(sessions[0]).splitlines() if line.strip())
+        events = [json.loads(line) for line in source(coding_session(trial_root)).splitlines() if line.strip()]
+        provider = coding_provider(pointer, events, raw['session_id'])
         tokens, requests, starts, finishes = session_usage(events)
         start, finish, seconds, time_basis = coding_time(result, starts, finishes)
         entry_id = release_id + '-' + row['model_label']
@@ -189,7 +207,7 @@ def prepare(final, package):
                     raise ValueError(f'Exported evidence differs from source inventory: {group}/{item["name"]}')
         info = metadata['models'][row['model']]
         entry = {'id': entry_id, 'model': row['model'], 'name': NAMES[row['model']], 'effort': row['effort'],
-                 'agent': 'Codex', 'agent_version': raw['agent']['version'], 'provider': 'OpenRouter',
+                 'agent': 'Codex', 'agent_version': raw['agent']['version'], 'provider': provider,
                  'release_date': info['release_date'], 'release_date_source': info['source']}
         if entry_id in entries and entries[entry_id] != entry:
             raise ValueError('Mixed agent configurations in one model entry')
@@ -204,7 +222,7 @@ def prepare(final, package):
         if any(tokens[k] != fm.get(f) for k, f in [('input_tokens', 'total_prompt_tokens'), ('output_tokens', 'total_completion_tokens')]):
             usage_note += ' The ATIF summary lags the final receipt; totals include that recorded response.'
         config = {'agent': 'Codex', 'version': raw['agent']['version'], 'model': row['model'],
-                  'effort': row['effort'], 'provider': 'OpenRouter', 'run_mode': pointer.get('mode') or 'native',
+                  'effort': row['effort'], 'provider': provider, 'run_mode': pointer.get('mode') or 'native',
                   'task_commit': pointer.get('source_revision'), 'verifier_commit': pointer.get('source_revision')}
         trial = {'id': trial_id, 'entry': entry_id, 'task': row['task'], 'score': score, 'valid': True,
                  'agent_status': exception or ('completed' if finishes else 'Completion not recorded in the archived session'),
@@ -217,7 +235,7 @@ def prepare(final, package):
         snapshot['trials'].append(trial)
         usage_rows.append({'task': row['task'], 'model': row['model'], 'effort': row['effort'],
                            'primary_trajectory_sha256': digest(trajectory), 'requests': requests})
-        print(f'Prepared {number:2}/94: {row["task"]} / {row["model_label"]}', flush=True)
+        print(f'Prepared {number:3}/{len(rows)}: {row["task"]} / {row["model_label"]}', flush=True)
     snapshot['entries'] = sorted(entries.values(), key=lambda e: e['id'])
     # Freeze usage outside the upload package, so source receipts are never uploaded accidentally.
     usage = {'schema': 1, 'rows': usage_rows}
