@@ -1,17 +1,20 @@
-# Community submission: gemini-4-argon (Antigravity CLI harness)
+# Community submission: gemini-4-argon (Antigravity CLI harness) — corrected
 
-**Equal-weight mean: 21.80 / 100** over all 47 Search-SWE tasks (26 tasks scored 0, 4 perfect 100s).
+**Equal-weight mean: 32.61 / 100** over all 47 Search-SWE tasks (corrected from an earlier 21.80).
 
-- **Model:** gemini-4-argon, reasoning effort `high` (the Antigravity CLI harness rejects `max`; `high` is its top setting).
-- **Harness:** Antigravity CLI (`agy`) native agent route, Vertex AI via Application Default Credentials. This is **not** the Codex harness behind the leaderboard, nor the Claude Code harness of the companion claude-sonnet-5-5 submission, so cross-harness comparison is confounded.
-- **Pipeline:** official `search-swe` CLI → Harbor native route with the separate per-task verifier; score = native reward × 100, equal task weight.
-- **Hardware:** single node, 8× NVIDIA H100 80GB HBM3, 208 vCPU, 1842 GiB RAM, driver 570.195.03, Docker 29.9.3.
+- **Model:** gemini-4-argon, reasoning effort `high` (the Antigravity CLI harness's top setting; it rejects `max`).
+- **Harness:** Antigravity CLI (`agy`) native route, Vertex AI via ADC. This is **not** the leaderboard's Codex harness, nor the companion Claude Code run.
+- **Trajectories** (46/47, redacted, JSON-clean, real step counts): <https://huggingface.co/datasets/ubowang/search-swe-gemini-4-argon>
 
-## Trajectories
-46 of 47 complete ATIF trajectories and verifier rewards (credentials redacted, host paths aliased):
-<https://huggingface.co/datasets/ubowang/search-swe-gemini-4-argon>
+## Correction (2026-11-13 review response)
+The initial run (concurrency 16) exhausted the Vertex AI per-minute token quota and terminated **20 tasks mid-solve** with 429 after 8 retries — an infrastructure failure, not model capability. Fix:
+- **17** tasks truncated mid-work were **re-solved at low concurrency (4)** and now complete cleanly (e.g. `lightweight-query-retrieval` 0→84.93, `negative-constraint-retrieval` 0→100, `legal-stance-retrieval` 0→64.97).
+- **3** tasks had already produced a complete, scored submission before a trailing 429, so their original valid scores are kept (`instruction-following-embedding` 100, `code-reranker-finetuning` 47.73, `narrative-clue-search` 16.70) — not replaced by a re-solve attempt, and not cherry-picked.
+- `large-scale-formula-retrieval` still does not complete (a `/sys/fs/cgroup/memory.events` cgroup limit); counted as 0.
 
-## Notes
-- Lower than the companion claude-sonnet-5-5 run (30.66), and the gap is largely genuine: on several tasks argon submitted incomplete deliverables (e.g. `same-place-image-search` produced only `features.py` with no build/run scripts; several submissions did not run), and it terminated earlier (trajectories ~38 MB vs ~477 MB for sonnet). The integrity audit (`jailbreak_judge`) is mostly **not** the cause — on `same-place-image-search` the audit explicitly passed, and `sparse-retrieval-pruning` scored 100 despite a non-fatal judge-environment warning.
-- `large-scale-formula-retrieval` did not complete (a `/sys/fs/cgroup/memory.events` cgroup limit in the bounded-storage task); counted as 0, as for the sonnet run. `incremental-vector-search` needed a root rerun (100).
-- Integrating into the live board needs the same importer support for a non-Codex harness as noted in the sonnet submission.
+Corrected mean **21.80 → 32.61**, comparable to the companion claude-sonnet-5-5 run (30.66) under its different harness.
+
+## Data fixes (review)
+- **Token usage / cost:** not captured by the agy native route; shown as `unknown` (not 0).
+- **JSON validity:** harness-redacted boolean fields appeared as bare `[REDACTED]`; quoted to valid `"[REDACTED]"` (content unchanged).
+- **Step counts** corrected (7,728 total; earlier metadata recorded 0). `provenance.json` records both run batches (original concurrency 16 at commit 2b5dabe, re-solve concurrency 4 at 0.3.0 Java-fix commit a09bca1) and each task's result source.

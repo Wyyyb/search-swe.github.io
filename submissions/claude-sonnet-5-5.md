@@ -10,7 +10,7 @@
 - **Hardware:** single node, 8× NVIDIA H100 80GB HBM3, 208 vCPU, 1842 GiB RAM, NVIDIA driver 570.195.03, Docker 29.9.3. GPU tasks used a Container Device Interface (CDI) GPU request.
 
 ## Trajectories
-Complete ATIF trajectories and verifier rewards for all 47 tasks:
+Complete ATIF trajectories for all 47 tasks (45 have an independent verifier reward file; `incremental-vector-search` and `large-scale-formula-retrieval` lack one — see the dataset notes):
 <https://huggingface.co/datasets/ubowang/search-swe-claude-sonnet-5-5>
 
 Host paths are replaced with documented aliases; the Vertex project ID, gateway host/URL/port, and credential patterns are redacted.
