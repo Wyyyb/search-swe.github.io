@@ -17,7 +17,7 @@ Host paths are replaced with documented aliases; the Vertex project ID, gateway 
 
 ## Notes for maintainers
 - This run uses the **Claude Code** harness, not the **Codex** harness behind the current leaderboard entries (GPT-6 Luna, GPT-6.1 Terra), so it is not a strict apples-to-apples comparison.
-- Integrating it into the board needs the publication pipeline to support a Claude Code model entry: `scripts/import_final_results.py` is currently pinned to Luna/Terra and reads Codex-native session receipts (`token_usage_record`, `task_started`/`task_complete`) for usage and cost, which Claude Code sessions do not emit in that schema.
+- Harness is labeled **Claude Code** (not the Codex harness of current leaderboard entries); inclusion on the published board is at the maintainers' discretion via their publication pipeline.
 - The Jina API outage on 2026-11-08/09 (UTC 21:22 → 01:15) did not affect this run; all scoring finished by 2026-11-08 14:17 UTC.
 
 ## Per-task scores
