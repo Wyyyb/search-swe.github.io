@@ -1,7 +1,8 @@
 # Community submission: claude-sonnet-5-5 (Claude Code harness)
 
-**Equal-weight mean: 30.66 / 100** over all 47 Search-SWE tasks
-(19 tasks scored 0, 4 perfect 100s).
+**Equal-weight mean: 36.89 / 100** (provisional) over all 47 Search-SWE tasks (11 tasks scored 0, 4 perfect 100s).
+Two tasks — `large-scale-formula-retrieval` and `rust-bm25-search` — remain pending maintainer reruns and are counted 0; the mean over the 45 resolved tasks is **38.52**.
+Updated by the 2026-11-19 regrade rounds (PR comments 7000354737 + 7013193625): verifier-only `search-swe regrade` recovered 8 false/ pending zeros.
 
 ## Configuration
 - **Model:** claude-sonnet-5-5, reasoning effort `max`.
@@ -33,42 +34,41 @@ Host paths are replaced with documented aliases; the Vertex project ID, gateway 
 | negative-constraint-retrieval | 80.00 |
 | sketch-text-search | 59.48 |
 | decision-model-training | 58.40 |
+| chunqiu-temporal-retrieval | 55.89 |
+| query-encoder-alignment | 52.50 |
 | code-reranker-finetuning | 52.27 |
 | visual-document-qa | 50.52 |
 | join-aware-table-retrieval | 50.00 |
 | reasoning-query-rewriting | 50.00 |
 | composed-image-search | 48.94 |
+| legal-stance-retrieval | 48.26 |
 | spoken-query-search | 43.76 |
 | narrative-clue-search | 41.27 |
 | long-document-reranking | 40.00 |
+| quantity-aware-retrieval | 39.89 |
 | layout-page-search | 37.48 |
 | khmer-embedding-training | 36.83 |
+| code-embedding-finetuning | 33.50 |
 | document-page-search | 32.67 |
 | protein-text-bidirectional-retrieval | 32.58 |
 | video-moment-search | 31.26 |
 | agentic-search-vectorless | 29.92 |
+| budgeted-candidate-reranking | 29.54 |
 | code-context-retrieval | 26.93 |
 | agentic-search | 25.58 |
+| constrained-molecular-search | 22.93 |
 | financial-report-qa | 19.21 |
 | methodology-inspiration-retrieval | 15.31 |
+| biomedical-graph-retrieval | 10.00 |
 | multilingual-vector-postprocessing | 9.28 |
-| biomedical-graph-retrieval | 0.00 |
 | budgeted-bimetric-retrieval | 0.00 |
-| budgeted-candidate-reranking | 0.00 |
-| chunqiu-temporal-retrieval | 0.00 |
-| code-embedding-finetuning | 0.00 |
-| constrained-molecular-search | 0.00 |
 | evolving-personal-memory | 0.00 |
 | icsi-meeting-memory | 0.00 |
 | large-scale-formula-retrieval | 0.00 |
-| legal-stance-retrieval | 0.00 |
 | long-pdf-evidence | 0.00 |
 | long-pdf-evidence-vectorless | 0.00 |
 | memory-constrained-dense-retrieval | 0.00 |
 | paper-metadata-retrieval | 0.00 |
-| quantity-aware-retrieval | 0.00 |
-| query-encoder-alignment | 0.00 |
 | rust-bm25-search | 0.00 |
 | scientific-paper-qa | 0.00 |
 | training-error-tracing | 0.00 |
-
