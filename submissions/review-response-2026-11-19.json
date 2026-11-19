@@ -197,5 +197,9 @@
       "notes": "cgroup-v1 grader-infra; same as sonnet",
       "evidence": "https://huggingface.co/datasets/ubowang/search-swe-gemini-4-argon/tree/main/evidence/constrained-molecular-search"
     }
-  ]
+  ],
+  "hf_commit_shas": {
+    "sonnet": "f69c8e539f7bc7973cd66248748da9628e49871e",
+    "argon": "0de379e40d5c43ab2dd3e6e819b3c89549dcd250"
+  }
 }
