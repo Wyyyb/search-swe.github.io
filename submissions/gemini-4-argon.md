@@ -16,7 +16,7 @@ The initial run (concurrency 16) exhausted the Vertex AI per-minute token quota 
 Corrected mean **21.80 → 32.61 → 34.02** (latest from the 2026-11-19 regrade rounds), comparable to the companion claude-sonnet-5-5 run (36.89) under its different harness.
 
 ## Data fixes (review)
-- **Token usage / cost:** not captured by the agy native route; shown as `unknown` (not 0).
+- **Token usage:** recovered from the native `antigravity-cli.trajectory.jsonl` and uploaded to the HF dataset (`usage.json` + `usage_responses.jsonl`, revision `a3cd1787`; PR comment 7032165652): per-response input/cache-read/output for all 46 selected trials, mapped to the ATIF trajectory step_id (100% of model responses). Grand total input 84.05M · cache-read 684.18M · output 9.88M. **Cost** is still not recorded by the agy/Vertex route (derive from Vertex pricing × tokens).
 - **JSON validity:** harness-redacted boolean fields appeared as bare `[REDACTED]`; quoted to valid `"[REDACTED]"` (content unchanged).
 - **Step counts** corrected (7,728 total; earlier metadata recorded 0). `provenance.json` records both run batches (original concurrency 16 at commit 2b5dabe, re-solve concurrency 4 at 0.3.0 Java-fix commit a09bca1) and each task's result source.
 
